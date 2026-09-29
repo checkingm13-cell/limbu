@@ -1,0 +1,11 @@
+# Build artifacts
+target/
+rust_core/target/
+__pycache__/
+*.pyc
+
+# Local secrets or scratch files
+.env
+scratch/
+check_stats.py
+verify_all_klines.py

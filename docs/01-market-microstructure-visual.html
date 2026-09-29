@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Microstructure & Order Execution — Visual Masterclass</title>
+  <style>
+    :root {
+      --bg-main: #0B0F19;
+      --bg-card: #131B2E;
+      --bg-card-subtle: #1C2640;
+      --border-color: #243256;
+      --accent-green: #10B981;
+      --accent-green-bg: rgba(16, 185, 129, 0.15);
+      --accent-red: #EF4444;
+      --accent-red-bg: rgba(239, 68, 68, 0.15);
+      --accent-blue: #3B82F6;
+      --accent-amber: #F59E0B;
+      --accent-purple: #8B5CF6;
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --text-dim: #6B7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Header & Hero */
+    .hero {
+      background: radial-gradient(circle at 50% 0%, #1E294B 0%, var(--bg-main) 70%);
+      padding: 3.5rem 1.5rem 2.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .badge-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60A5FA;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #FFFFFF 30%, #93C5FD 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .golden-rule-banner {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.12), rgba(245, 158, 11, 0.12));
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 12px;
+      padding: 1.25rem 2rem;
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      text-align: left;
+    }
+
+    .golden-rule-icon {
+      font-size: 2.2rem;
+      flex-shrink: 0;
+    }
+
+    .golden-rule-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #FCD34D;
+      margin-bottom: 0.25rem;
+    }
+
+    .golden-rule-desc {
+      color: #E5E7EB;
+      font-size: 0.95rem;
+    }
+
+    /* Sections */
+    section {
+      margin-top: 4rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    .section-number {
+      background: var(--accent-blue);
+      color: #FFF;
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: -1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: #3B82F6;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    /* 13yo Comic Analogy Box */
+    .comic-box {
+      background: #0E1726;
+      border: 2px dashed #4F46E5;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .comic-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .comic-badge {
+      background: #4F46E5;
+      color: white;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+    }
+
+    .comic-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .step-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .step-emoji {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .step-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #F9FAFB;
+      margin-bottom: 0.35rem;
+    }
+
+    .step-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* Live Interactive Order Book */
+    .order-book-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      background: #0A0E17;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .order-book-container {
+        grid-template-columns: 1fr;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 2rem;
+      }
+    }
+
+    .book-column-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .bid-title {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .ask-title {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    .book-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .book-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      padding: 0.5rem 0.25rem;
+      text-transform: uppercase;
+    }
+
+    .book-table td {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.95rem;
+      position: relative;
+    }
+
+    .book-row {
+      position: relative;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .book-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .depth-bar {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      opacity: 0.18;
+      pointer-events: none;
+      border-radius: 3px;
+    }
+
+    .depth-bar-bid {
+      background-color: var(--accent-green);
+    }
+
+    .depth-bar-ask {
+      background-color: var(--accent-red);
+      left: 0;
+      right: auto;
+    }
+
+    .spread-bar {
+      grid-column: 1 / -1;
+      background: #182238;
+      border: 1px solid #29385C;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .spread-val {
+      color: #FCD34D;
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    /* Interactive Simulator Console */
+    .interactive-sim {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .sim-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .sim-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .sim-input-group label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .sim-input {
+      background: #1F2937;
+      border: 1px solid #4B5563;
+      border-radius: 6px;
+      color: #FFF;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .sim-input:focus {
+      border-color: #3B82F6;
+    }
+
+    .btn {
+      padding: 0.65rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-green {
+      background: var(--accent-green);
+      color: #064E3B;
+    }
+
+    .btn-green:hover {
+      background: #34D399;
+      transform: translateY(-1px);
+    }
+
+    .btn-red {
+      background: var(--accent-red);
+      color: #450A0A;
+    }
+
+    .btn-red:hover {
+      background: #F87171;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #4B5563;
+      color: #D1D5DB;
+    }
+
+    .btn-outline:hover {
+      background: #1F2937;
+      border-color: #9CA3AF;
+    }
+
+    .sim-output {
+      background: #0B0F17;
+      border: 1px solid #1F2937;
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    .sim-output .highlight {
+      color: #60A5FA;
+      font-weight: bold;
+    }
+
+    .sim-output .success {
+      color: #34D399;
+      font-weight: bold;
+    }
+
+    .sim-output .warning {
+      color: #FBBF24;
+      font-weight: bold;
+    }
+
+    .sim-output .danger {
+      color: #F87171;
+      font-weight: bold;
+    }
+
+    /* Order Types Battle Cards */
+    .order-type-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .order-type-header {
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .order-type-body {
+      padding: 1.5rem;
+      flex-grow: 1;
+    }
+
+    .feature-pill-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .pill {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .pill-yes {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .pill-no {
+      background: rgba(239, 68, 68, 0.2);
+      color: #F87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .quote-box {
+      font-style: italic;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid #3B82F6;
+      padding: 0.6rem 0.9rem;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 1rem;
+      color: #D1D5DB;
+      font-size: 0.9rem;
+    }
+
+    .use-case-tag {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: #93C5FD;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    /* Slippage Breakdown Diagram */
+    .slippage-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+
+    .slippage-step {
+      display: grid;
+      grid-template-columns: 80px 1fr 120px;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.9rem 1.25rem;
+      gap: 1rem;
+    }
+
+    .step-tag {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #818CF8;
+    }
+
+    .step-name {
+      font-weight: 600;
+      color: #F3F4F6;
+    }
+
+    .step-detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .step-penalty {
+      text-align: right;
+      font-family: monospace;
+      font-weight: 700;
+      color: #F87171;
+      font-size: 1.05rem;
+    }
+
+    /* Cost Calculator */
+    .calc-container {
+      background: #111827;
+      border: 1px solid #1F2937;
+      border-radius: 12px;
+      padding: 1.75rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 850px) {
+      .calc-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .slider-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .slider-val {
+      color: #60A5FA;
+      font-weight: 700;
+    }
+
+    input[type=range] {
+      width: 100%;
+      height: 6px;
+      background: #374151;
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #3B82F6;
+      cursor: pointer;
+      border: 2px solid #FFF;
+    }
+
+    .calc-receipt {
+      background: #0A0E17;
+      border: 1px solid #243256;
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .receipt-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.45rem 0;
+      font-size: 0.875rem;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
+    }
+
+    .receipt-line:last-child {
+      border-bottom: none;
+    }
+
+    .receipt-total {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 2px solid #374151;
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    /* Interactive Quiz */
+    .quiz-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .quiz-card:hover {
+      border-color: #4B5563;
+    }
+
+    .quiz-question {
+      font-weight: 700;
+      color: #F9FAFB;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .quiz-answer {
+      display: none;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border-color);
+      color: #93C5FD;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .quiz-card.active .quiz-answer {
+      display: block;
+    }
+
+    .quiz-card.active {
+      border-color: #3B82F6;
+      background: #172138;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 5rem;
+      padding: 2.5rem 0;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .highlight-badge {
+      background: rgba(245, 158, 11, 0.2);
+      color: #FCD34D;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO SECTION -->
+  <header class="hero">
+    <div class="badge-top">⚡ Level 01 — Quant Execution Architecture</div>
+    <h1>Market Microstructure & Order Execution</h1>
+    <p class="hero-subtitle">
+      Why 90% of retail trading algorithms die in the real world — and how order books, slippage, queues, and friction actually work under the hood.
+    </p>
+
+    <div class="golden-rule-banner">
+      <div class="golden-rule-icon">💡</div>
+      <div>
+        <div class="golden-rule-title">The Master Rule of Trading Systems</div>
+        <div class="golden-rule-desc">
+          <strong>"The price shown on your chart is NOT the price you get."</strong><br>
+          Backtests trade on past prices. Real markets trade on live, contested order queues.
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 13-YEAR-OLD ANALOGY SECTION -->
+    <section>
+      <div class="comic-box">
+        <div class="comic-header">
+          <span class="comic-badge">Explain Like I'm 13</span>
+          <h2 style="font-size: 1.4rem; color: #FFF; font-weight: 700;">The Candy Store & The 400-Person Line</h2>
+        </div>
+        <p style="color: #D1D5DB; margin-bottom: 1.5rem; font-size: 1rem;">
+          Imagine you have ₹100 and walk up to a candy store. The billboard says <strong>"Chocolates: ₹100"</strong> (This is LTP — Last Traded Price). You think you can just buy 10 chocolates right now, right? Here is what happens in the real world:
+        </p>
+
+        <div class="comic-steps">
+          <div class="step-card">
+            <span class="step-emoji">📜</span>
+            <div class="step-title">1. The Sign is Old News</div>
+            <div class="step-desc">
+              The sign only tells you what the <em>last kid</em> paid 5 minutes ago. That candy is already gone!
+            </div>
+          </div>
+
+          <div class="step-card">
+            <span class="step-emoji">🏪</span>
+            <div class="step-title">2. The Sellers' Shelf (Ask)</div>
+            <div class="step-desc">
+              The seller says: <em>"I only have 2 chocolates left at ₹100. If you want 8 more, you must pay ₹100.50 each!"</em>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <span class="step-emoji">🏃‍♂️</span>
+            <div class="step-title">3. The Huge Queue (Priority)</div>
+            <div class="step-desc">
+              If you say <em>"I will only pay ₹99,"</em> the shopkeeper puts you behind <strong>400 other kids</strong> already waiting at ₹99!
+            </div>
+          </div>
+
+          <div class="step-card">
+            <span class="step-emoji">👮‍♂️</span>
+            <div class="step-title">4. The Entry Fee (Taxes)</div>
+            <div class="step-desc">
+              Even if you resell at ₹100.50, the guard takes ₹0.30 in taxes, platform fees, and receipts. Your profit disappears!
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: THE REALITY GAP -->
+    <section>
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <h2 class="section-title">The Fantasy vs The Brutal Reality</h2>
+      </div>
+      <p class="section-subtitle">Why your backtest prints +40% CAGR, but your live broker account prints -8%.</p>
+
+      <div class="grid-2">
+        <div class="card" style="border-color: rgba(16, 185, 129, 0.4);">
+          <h3 style="color: #34D399; margin-bottom: 0.75rem; font-size: 1.25rem;">🎮 The Backtest Fantasy</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+            You code a strategy in Python using daily or 1-minute OHLC candles:
+          </p>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem;">
+            <li>✅ "Candle closed at ₹100.00 → BUY 1,000 shares at ₹100.00 exactly."</li>
+            <li>✅ "Price touched ₹100.50 → SELL 1,000 shares at ₹100.50."</li>
+            <li>✅ "Gross Profit = ₹500. Pure magic!"</li>
+            <li>❌ <strong>Zero queue delay, zero slippage, zero realistic transaction drag.</strong></li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-color: rgba(239, 68, 68, 0.4);">
+          <h3 style="color: #F87171; margin-bottom: 0.75rem; font-size: 1.25rem;">⚡ The Live Market Reality</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+            The exact same script sent to a live exchange matching engine:
+          </p>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem;">
+            <li>🚨 <strong>Queue Position #400:</strong> Price briefly touched ₹100.00, but only 350 shares traded. You got 0 fills!</li>
+            <li>🚨 <strong>Slippage:</strong> To get immediate execution, your order ate multiple levels up to ₹100.12 (-0.12%).</li>
+            <li>🚨 <strong>Friction:</strong> STT, Stamp Duty, NSE Charges, SEBI, GST, Brokerage ate another ₹0.40%.</li>
+            <li>🚨 <strong>Net result:</strong> The "winning" trade lost real money.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: THE ORDER BOOK & INTERACTIVE SIMULATOR -->
+    <section>
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <h2 class="section-title">The Live Order Book (Depth of Market)</h2>
+      </div>
+      <p class="section-subtitle">The matching engine only knows one rule: Price-Time Priority. Lowest Ask meets Highest Bid.</p>
+
+      <!-- Visual Order Book Table -->
+      <div class="order-book-container">
+        <!-- BID SIDE -->
+        <div>
+          <div class="book-column-title bid-title">
+            <span>🟢 BID (Buyers — Highest First)</span>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Total: 9,650</span>
+          </div>
+          <table class="book-table">
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Quantity</th>
+                <th>Bid Price (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="bidTableBody">
+              <tr class="book-row">
+                <td style="color: #34D399; font-weight: bold;">L1 (Best)</td>
+                <td>850</td>
+                <td style="font-weight: 700; color: #FFF;">2,449.80</td>
+                <div class="depth-bar depth-bar-bid" style="width: 25%;"></div>
+              </tr>
+              <tr class="book-row">
+                <td>L2</td>
+                <td>2,300</td>
+                <td style="font-weight: 700; color: #FFF;">2,449.75</td>
+                <div class="depth-bar depth-bar-bid" style="width: 50%;"></div>
+              </tr>
+              <tr class="book-row">
+                <td>L3</td>
+                <td>1,100</td>
+                <td style="font-weight: 700; color: #FFF;">2,449.70</td>
+                <div class="depth-bar depth-bar-bid" style="width: 30%;"></div>
+              </tr>
+              <tr class="book-row">
+                <td>L4</td>
+                <td>5,000</td>
+                <td style="font-weight: 700; color: #FFF;">2,449.60</td>
+                <div class="depth-bar depth-bar-bid" style="width: 90%;"></div>
+              </tr>
+              <tr class="book-row">
+                <td>L5</td>
+                <td>400</td>
+                <td style="font-weight: 700; color: #FFF;">2,449.50</td>
+                <div class="depth-bar depth-bar-bid" style="width: 15%;"></div>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ASK SIDE -->
+        <div>
+          <div class="book-column-title ask-title">
+            <span>🔴 ASK (Sellers — Lowest First)</span>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Total: 14,100</span>
+          </div>
+          <table class="book-table">
+            <thead>
+              <tr>
+                <th>Ask Price (₹)</th>
+                <th>Quantity</th>
+                <th>Level</th>
+              </tr>
+            </thead>
+            <tbody id="askTableBody">
+              <tr class="book-row">
+                <td style="font-weight: 700; color: #FFF;">2,450.00</td>
+                <td>1,200</td>
+                <td style="color: #F87171; font-weight: bold;">L1 (Best)</td>
+                <div class="depth-bar depth-bar-ask" style="width: 28%;"></div>
+              </tr>
+              <tr class="book-row">
+                <td style="font-weight: 700; color: #FFF;">2,450.05</td>
+                <td>900</td>
+                <td>L2</td>
+                <div class="depth-bar depth-bar-ask" style="width: 20%;"></div>
+              </tr>
+              <tr class="book-row">
+                <td style="font-weight: 700; color: #FFF;">2,450.10</td>
+                <td>3,400</td>
+                <td>L3</td>
+                <div class="depth-bar depth-bar-ask" style="width: 60%;"></div>
+              </tr>
+              <tr class="book-row">
+                <td style="font-weight: 700; color: #FFF;">2,450.25</td>
+                <td>600</td>
+                <td>L4</td>
+                <div class="depth-bar depth-bar-ask" style="width: 15%;"></div>
+              </tr>
+              <tr class="book-row">
+                <td style="font-weight: 700; color: #FFF;">2,450.40</td>
+                <td>8,000</td>
+                <td>L5</td>
+                <div class="depth-bar depth-bar-ask" style="width: 100%;"></div>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- SPREAD & MID PRICE BANNER -->
+        <div class="spread-bar">
+          <div>
+            <span style="color: var(--text-muted);">BID:</span> <strong>₹2,449.80</strong>
+            <span style="margin: 0 10px; color: var(--border-color);">|</span>
+            <span style="color: var(--text-muted);">ASK:</span> <strong>₹2,450.00</strong>
+          </div>
+          <div>
+            BID-ASK SPREAD: <span class="spread-val">₹0.20 (0.008%)</span>
+          </div>
+          <div>
+            FAIR MID PRICE: <span style="color: #60A5FA; font-weight: 700;">₹2,449.90</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE "WALK THE BOOK" SIMULATOR -->
+      <div class="interactive-sim">
+        <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          🕹️ Interactive Simulator: "Walking The Book" & Market Impact
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+          Place a <strong>Market Buy Order</strong>. Watch how your order swallows the depth level by level and pushes your average price up!
+        </p>
+
+        <div class="sim-controls">
+          <div class="sim-input-group">
+            <label>Order Size (Quantity)</label>
+            <input type="number" id="orderQtyInput" class="sim-input" value="5000" min="100" max="14000" step="100">
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; margin-top: 1.35rem;">
+            <button class="btn btn-green" onclick="simulateMarketBuy()">🛒 Execute Market BUY</button>
+            <button class="btn btn-outline" onclick="setPresetQty(500)">Preset 500</button>
+            <button class="btn btn-outline" onclick="setPresetQty(2000)">Preset 2,000</button>
+            <button class="btn btn-outline" onclick="setPresetQty(5000)">Preset 5,000</button>
+          </div>
+        </div>
+
+        <div class="sim-output" id="simOutputBox">
+          Click <strong>"Execute Market BUY"</strong> to see which price levels get consumed!
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: THE 4 ORDER TYPES -->
+    <section>
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <h2 class="section-title">The 4 Order Types — When & How to Use</h2>
+      </div>
+      <p class="section-subtitle">Your strategy decides WHAT to do. Your execution layer decides HOW to place it.</p>
+
+      <div class="grid-2">
+        <!-- MARKET ORDER -->
+        <div class="order-type-card">
+          <div class="order-type-header">
+            <h3 style="color: #FFF; font-size: 1.2rem;">🛒 Market Order</h3>
+            <span class="highlight-badge">Immediate Execution</span>
+          </div>
+          <div class="order-type-body">
+            <div class="feature-pill-row">
+              <span class="pill pill-yes">✔ Execution Guaranteed</span>
+              <span class="pill pill-no">✘ Price NOT Guaranteed</span>
+            </div>
+            <div class="quote-box">
+              "Give it to me RIGHT NOW, whatever the price is."
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Walks the book from L1 upwards until your entire quantity is filled. You cross the spread immediately.
+            </p>
+            <div class="use-case-tag">Best For: Emergency stop-loss, liquid index options, fast exit.</div>
+          </div>
+        </div>
+
+        <!-- LIMIT ORDER -->
+        <div class="order-type-card">
+          <div class="order-type-header">
+            <h3 style="color: #FFF; font-size: 1.2rem;">🏷️ Limit Order</h3>
+            <span class="highlight-badge" style="background: rgba(59, 130, 246, 0.2); color: #93C5FD; border-color: rgba(59, 130, 246, 0.4);">Price Certainty</span>
+          </div>
+          <div class="order-type-body">
+            <div class="feature-pill-row">
+              <span class="pill pill-no">✘ Execution NOT Guaranteed</span>
+              <span class="pill pill-yes">✔ Price Guaranteed</span>
+            </div>
+            <div class="quote-box">
+              "I only trade at this price or better. Otherwise, leave it."
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Stands inside the book queue. Earns the spread instead of paying it. But if the market runs away, you get zero shares.
+            </p>
+            <div class="use-case-tag">Best For: Mean-reversion entries, passive alpha, illiquid scrips.</div>
+          </div>
+        </div>
+
+        <!-- STOP-LOSS (SL) -->
+        <div class="order-type-card">
+          <div class="order-type-header">
+            <h3 style="color: #FFF; font-size: 1.2rem;">🛑 Stop-Loss Limit (SL)</h3>
+            <span class="highlight-badge" style="background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4);">Trigger + Limit</span>
+          </div>
+          <div class="order-type-body">
+            <div class="feature-pill-row">
+              <span class="pill pill-no">✘ Gap-down Risk</span>
+              <span class="pill pill-yes">✔ Price Cap</span>
+            </div>
+            <div class="quote-box">
+              "When price drops to ₹95 (Trigger), place a LIMIT order at ₹94.80."
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              ⚠️ <strong>The Deadly Trap:</strong> If the price flashes straight down to ₹94.00, your ₹94.80 limit order sits pending forever. You stay trapped in a crashing position!
+            </p>
+            <div class="use-case-tag">Best For: Quiet range markets with zero overnight gap risk.</div>
+          </div>
+        </div>
+
+        <!-- STOP-LOSS MARKET (SL-M) -->
+        <div class="order-type-card">
+          <div class="order-type-header">
+            <h3 style="color: #FFF; font-size: 1.2rem;">🚨 Stop-Loss Market (SL-M)</h3>
+            <span class="highlight-badge" style="background: rgba(16, 185, 129, 0.2); color: #86EFAC; border-color: rgba(16, 185, 129, 0.4);">True Capital Shield</span>
+          </div>
+          <div class="order-type-body">
+            <div class="feature-pill-row">
+              <span class="pill pill-yes">✔ Guaranteed Exit</span>
+              <span class="pill pill-no">✘ Possible Slippage</span>
+            </div>
+            <div class="quote-box">
+              "When price drops to ₹95 (Trigger), dump everything at MARKET instantly."
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Guarantees you exit the disaster even in flash crashes. You may slip a few paise, but you will never hold a bankrupt stock overnight.
+            </p>
+            <div class="use-case-tag">Best For: All automated quant stops and circuit-breaker risk controls.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: THE 4 SOURCES OF SLIPPAGE -->
+    <section>
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <h2 class="section-title">The 4 Demons of Slippage</h2>
+      </div>
+      <p class="section-subtitle">How a clean ₹2,450.00 decision turns into a ₹2,451.10 fill.</p>
+
+      <div class="slippage-timeline">
+        <div class="slippage-step">
+          <span class="step-tag">(A)</span>
+          <div>
+            <div class="step-name">Signal Lag (Thinking Time)</div>
+            <div class="step-detail">Time taken from candle close to algorithmic calculation (50–300 ms). Market drifted slightly.</div>
+          </div>
+          <div class="step-penalty">+₹0.05</div>
+        </div>
+
+        <div class="slippage-step">
+          <span class="step-tag">(B)</span>
+          <div>
+            <div class="step-name">Network Latency (Wire Travel)</div>
+            <div class="step-detail">Your server to Broker API, then Broker to Exchange matching engine (20–80 ms).</div>
+          </div>
+          <div class="step-penalty">+₹0.15</div>
+        </div>
+
+        <div class="slippage-step">
+          <span class="step-tag">(C)</span>
+          <div>
+            <div class="step-name">Spread Crossing Cost</div>
+            <div class="step-detail">You bought using Market Order, instantly paying the gap between Bid and Ask.</div>
+          </div>
+          <div class="step-penalty">+₹0.20</div>
+        </div>
+
+        <div class="slippage-step">
+          <span class="step-tag">(D)</span>
+          <div>
+            <div class="step-name">Market Impact (Walking the Depth)</div>
+            <div class="step-detail">Your order was bigger than L1 available volume, consuming L2 & L3 higher prices.</div>
+          </div>
+          <div class="step-penalty">+₹0.70</div>
+        </div>
+      </div>
+
+      <!-- Latency Budget Comparison -->
+      <div class="card" style="margin-top: 1.5rem; background: #0E1626;">
+        <h4 style="color: #60A5FA; margin-bottom: 0.75rem;">⏱️ The Retail Latency Reality Budget (Why HFT is Impossible for Us)</h4>
+        <div style="font-family: monospace; font-size: 0.9rem; line-height: 1.8; color: #D1D5DB;">
+          Tick emitted at Exchange &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; t = 0 ms<br>
+          Broker WebSocket pushes to your PC &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; t ≈ 20–60 ms<br>
+          Your Python process receives & unpacks &nbsp;&nbsp; t ≈ 60–90 ms<br>
+          Strategy logic calculates signal &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; t ≈ 90–95 ms<br>
+          Order travels back to broker &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; t ≈ 115–150 ms<br>
+          Exchange matching engine acknowledges &nbsp;&nbsp;&nbsp; t ≈ 150–200 ms<br>
+          <span style="color: #F87171; font-weight: 800;">TOTAL ROUND TRIP LATENCY: ≈ 150–250 ms</span>
+        </div>
+        <p style="color: #9CA3AF; font-size: 0.85rem; margin-top: 0.75rem;">
+          💡 <strong>Key Takeaway:</strong> In 200 ms, High-Frequency Trading (HFT) co-located firms with microsecond fiber lines have already traded 40 times. <strong>Your edge is NOT speed. Your edge is your logic and holding for at least 5 minutes or longer!</strong>
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 5: INDIAN TRANSACTION FRICTION CALCULATOR -->
+    <section>
+      <div class="section-header">
+        <span class="section-number">05</span>
+        <h2 class="section-title">The Real Cost of Trading (Indian Market Friction)</h2>
+      </div>
+      <p class="section-subtitle">Brokerage, STT, GST, Stamp Duty, and Exchange fees eat more capital than losing trades.</p>
+
+      <div class="calc-container">
+        <!-- CONTROLS -->
+        <div>
+          <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 1.25rem;">📊 Live Trade Parameters (Equity Intraday)</h3>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>Buy Price (₹)</span>
+              <span class="slider-val" id="valBuy">₹2,450.00</span>
+            </div>
+            <input type="range" id="inputBuy" min="100" max="10000" step="10" value="2450" oninput="updateCalculator()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>Sell Price (₹)</span>
+              <span class="slider-val" id="valSell">₹2,455.00</span>
+            </div>
+            <input type="range" id="inputSell" min="100" max="10000" step="10" value="2455" oninput="updateCalculator()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>Quantity (Shares)</span>
+              <span class="slider-val" id="valQty">100</span>
+            </div>
+            <input type="range" id="inputQty" min="10" max="2000" step="10" value="100" oninput="updateCalculator()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>Trades Per Day</span>
+              <span class="slider-val" id="valTrades">5</span>
+            </div>
+            <input type="range" id="inputTrades" min="1" max="50" step="1" value="5" oninput="updateCalculator()">
+          </div>
+
+          <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.75rem 1rem; margin-top: 1rem;">
+            <span style="color: #FCD34D; font-weight: 700; font-size: 0.85rem;">⚠️ The Minimum Hurdle Rate:</span>
+            <p style="font-size: 0.85rem; color: #D1D5DB; margin-top: 0.25rem;">
+              If your strategy does not generate an expected edge of at least <strong>0.12% per trade</strong>, it is mathematically guaranteed to go bankrupt over time.
+            </p>
+          </div>
+        </div>
+
+        <!-- RECEIPT BREAKDOWN -->
+        <div class="calc-receipt">
+          <div>
+            <h4 style="color: #93C5FD; font-size: 1rem; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+              🧾 Government & Broker Cut
+            </h4>
+
+            <div class="receipt-line">
+              <span style="color: var(--text-muted);">Gross P&L (Before Costs)</span>
+              <span id="resGross" style="font-weight: 700; color: #34D399;">+₹500.00</span>
+            </div>
+
+            <div class="receipt-line">
+              <span>Brokerage (₹20 cap / leg)</span>
+              <span id="resBrokerage" style="color: #F87171;">₹40.00</span>
+            </div>
+
+            <div class="receipt-line">
+              <span>STT (0.025% on Sell side)</span>
+              <span id="resSTT" style="color: #F87171;">₹61.38</span>
+            </div>
+
+            <div class="receipt-line">
+              <span>Exchange Txn Charge (NSE 0.00297%)</span>
+              <span id="resTxn" style="color: #F87171;">₹14.57</span>
+            </div>
+
+            <div class="receipt-line">
+              <span>SEBI Turnover Charge</span>
+              <span id="resSEBI" style="color: #F87171;">₹0.49</span>
+            </div>
+
+            <div class="receipt-line">
+              <span>Stamp Duty (0.003% on Buy side)</span>
+              <span id="resStamp" style="color: #F87171;">₹7.35</span>
+            </div>
+
+            <div class="receipt-line">
+              <span>GST (18% on Brokerage + Txn + SEBI)</span>
+              <span id="resGST" style="color: #F87171;">₹9.91</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="receipt-line" style="margin-top: 0.5rem; font-weight: 600;">
+              <span>Total Friction Cost</span>
+              <span id="resTotalCosts" style="color: #EF4444; font-weight: 800;">₹133.70</span>
+            </div>
+
+            <div class="receipt-total">
+              <span>NET TAKE-HOME P&L</span>
+              <span id="resNet" style="color: #10B981;">+₹366.30</span>
+            </div>
+
+            <div style="margin-top: 1rem; padding: 0.75rem; background: #1C2640; border-radius: 6px; text-align: center;">
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Annual Drag from Trading Overfrequency</span>
+              <span id="resYearlyDrag" style="font-size: 1.15rem; font-weight: 800; color: #FCD34D;">125.0% / year</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: THE 6 GRAVEYARD FAILURE MODES -->
+    <section>
+      <div class="section-header">
+        <span class="section-number">06</span>
+        <h2 class="section-title">The 6 Graveyard Mistakes & Their Fixes</h2>
+      </div>
+      <p class="section-subtitle">Every automated trading bug has a specific symptom and an architectural cure.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">👻</div>
+          <h4 style="color: #F87171; margin-bottom: 0.35rem;">1. Close-Price Illusion</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            <strong>Symptom:</strong> Live P&L is always lower than simulated backtests.
+          </p>
+          <div style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10B981; padding: 0.5rem; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: #A7F3D0;">
+            <strong>Fix:</strong> Generate signals on bar close, but assume fills on <strong>Next Bar Open + Slippage model</strong>.
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🕳️</div>
+          <h4 style="color: #F87171; margin-bottom: 0.35rem;">2. Gap-Down SL Traps</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            <strong>Symptom:</strong> Stop-loss limit order sits unfilled while stock crashes 10%.
+          </p>
+          <div style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10B981; padding: 0.5rem; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: #A7F3D0;">
+            <strong>Fix:</strong> Use <strong>SL-M</strong> for emergency stops and implement an OMS heartbeat kill switch.
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💧</div>
+          <h4 style="color: #F87171; margin-bottom: 0.35rem;">3. Illiquid Size Shock</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            <strong>Symptom:</strong> Single order moves the market by 1.5% against yourself.
+          </p>
+          <div style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10B981; padding: 0.5rem; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: #A7F3D0;">
+            <strong>Fix:</strong> Enforce pre-trade check: <code>Order Qty &le; 0.10 &times; Top 5 Depth Qty</code>.
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🧊</div>
+          <h4 style="color: #F87171; margin-bottom: 0.35rem;">4. Freeze Quantity Breach</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            <strong>Symptom:</strong> Exchange rejects order instantly due to exchange quantity cap.
+          </p>
+          <div style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10B981; padding: 0.5rem; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: #A7F3D0;">
+            <strong>Fix:</strong> Slice big parent orders into smaller child orders (Iceberg/TWAP slicing).
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚡</div>
+          <h4 style="color: #F87171; margin-bottom: 0.35rem;">5. Circuit Limit Lockdown</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            <strong>Symptom:</strong> Stock hits lower circuit. No buyers exist; bot cannot exit.
+          </p>
+          <div style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10B981; padding: 0.5rem; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: #A7F3D0;">
+            <strong>Fix:</strong> Track distance to lower circuit in real-time. Exit or flatten before distance &lt; 1.5%.
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💸</div>
+          <h4 style="color: #F87171; margin-bottom: 0.35rem;">6. The Hidden Friction Tax</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            <strong>Symptom:</strong> Bot has 60% win rate but account balance bleeds weekly.
+          </p>
+          <div style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10B981; padding: 0.5rem; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: #A7F3D0;">
+            <strong>Fix:</strong> Hardcode Indian statutory fee formulas into the backtester as mandatory friction.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: INTERACTIVE CHECKPOINT QUIZ -->
+    <section>
+      <div class="section-header">
+        <span class="section-number">07</span>
+        <h2 class="section-title">Memory Checkpoint (Click to Reveal Answers)</h2>
+      </div>
+      <p class="section-subtitle">Test yourself on the core 5 questions from the syllabus.</p>
+
+      <div class="quiz-card" onclick="toggleQuiz(this)">
+        <div class="quiz-question">
+          <span>1. Why is generating signals on LTP (Last Traded Price) dangerous?</span>
+          <span style="color: #60A5FA;">▼</span>
+        </div>
+        <div class="quiz-answer">
+          <strong>Answer:</strong> LTP is history — it only records where a past trade happened. It does NOT mean liquidity exists there right now. Your actual execution happens at the Ask (for buying) or Bid (for selling). Signals built on LTP generate phantom trades that fail in reality.
+        </div>
+      </div>
+
+      <div class="quiz-card" onclick="toggleQuiz(this)">
+        <div class="quiz-question">
+          <span>2. What is the exact difference between SL and SL-M, and when should you use each?</span>
+          <span style="color: #60A5FA;">▼</span>
+        </div>
+        <div class="quiz-answer">
+          <strong>Answer:</strong> When triggered, <strong>SL</strong> sends a Limit order, while <strong>SL-M</strong> sends a Market order. In violent downward moves or gap-downs, an SL order may be bypassed and stay open, exposing you to unlimited loss. Always use <strong>SL-M</strong> for emergency risk stops.
+        </div>
+      </div>
+
+      <div class="quiz-card" onclick="toggleQuiz(this)">
+        <div class="quiz-question">
+          <span>3. What is the annual capital drag of taking 20 intraday trades per day?</span>
+          <span style="color: #60A5FA;">▼</span>
+        </div>
+        <div class="quiz-answer">
+          <strong>Answer:</strong> At ~0.10% friction per trade, 20 trades/day = 2.0% daily drag. Over 250 trading days, this equals an astonishing <strong>500% annual capital drag</strong>. Overtrading mathematically guarantees retail bankruptcy.
+        </div>
+      </div>
+
+      <div class="quiz-card" onclick="toggleQuiz(this)">
+        <div class="quiz-question">
+          <span>4. What is the difference between Spread Cost and Market Impact?</span>
+          <span style="color: #60A5FA;">▼</span>
+        </div>
+        <div class="quiz-answer">
+          <strong>Answer:</strong> <strong>Spread cost</strong> is the static penalty of crossing from Bid to Ask for small sizes. <strong>Market impact</strong> occurs when your order size exceeds L1 depth, forcing you to walk into L2, L3, L4, moving the price against yourself.
+        </div>
+      </div>
+
+      <div class="quiz-card" onclick="toggleQuiz(this)">
+        <div class="quiz-question">
+          <span>5. What is a retail algo's realistic round-trip latency, and what design constraint does it impose?</span>
+          <span style="color: #60A5FA;">▼</span>
+        </div>
+        <div class="quiz-answer">
+          <strong>Answer:</strong> Realistic retail round-trip latency is <strong>150–250 milliseconds</strong>. Because institutional HFT firms execute in microseconds, retail traders cannot compete on pure speed. The constraint: holding period must be <strong>&ge; 5 minutes</strong> so latency becomes negligible noise.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>⚡ Quant Engineering Playbook · Module 01: Market Microstructure</p>
+    <p style="margin-top: 0.35rem; color: #4B5563;">Built for deep intuitive understanding, clean execution, and zero backtest illusions.</p>
+  </footer>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // Live Order Book Data (Ask side levels)
+    const askLevels = [
+      { level: 'L1', price: 2450.00, qty: 1200 },
+      { level: 'L2', price: 2450.05, qty: 900 },
+      { level: 'L3', price: 2450.10, qty: 3400 },
+      { level: 'L4', price: 2450.25, qty: 600 },
+      { level: 'L5', price: 2450.40, qty: 8000 }
+    ];
+
+    function setPresetQty(qty) {
+      document.getElementById('orderQtyInput').value = qty;
+      simulateMarketBuy();
+    }
+
+    function simulateMarketBuy() {
+      const orderQty = parseInt(document.getElementById('orderQtyInput').value) || 0;
+      const outputBox = document.getElementById('simOutputBox');
+
+      if (orderQty <= 0) {
+        outputBox.innerHTML = '<span class="danger">Please enter a valid positive quantity.</span>';
+        return;
+      }
+
+      let remaining = orderQty;
+      let totalCost = 0;
+      let breakdownHtml = `<span class="highlight">🚀 SIMULATING MARKET BUY OF ${orderQty.toLocaleString()} SHARES</span>\n\n`;
+
+      let filledLevels = [];
+
+      for (let i = 0; i < askLevels.length; i++) {
+        if (remaining <= 0) break;
+        const lvl = askLevels[i];
+        const fillThisLvl = Math.min(remaining, lvl.qty);
+        const costThisLvl = fillThisLvl * lvl.price;
+
+        totalCost += costThisLvl;
+        remaining -= fillThisLvl;
+
+        filledLevels.push({
+          level: lvl.level,
+          price: lvl.price,
+          qty: fillThisLvl,
+          cost: costThisLvl
+        });
+
+        breakdownHtml += `Level ${lvl.level}: Filled ${fillThisLvl.toLocaleString()} @ ₹${lvl.price.toFixed(2)} = ₹${costThisLvl.toLocaleString('en-IN', {maximumFractionDigits: 2})}\n`;
+      }
+
+      if (remaining > 0) {
+        breakdownHtml += `<span class="danger">⚠️ BOOK EXHAUSTED: ${remaining.toLocaleString()} shares remained unfilled due to lack of top 5 depth!</span>\n`;
+      }
+
+      const totalFilled = orderQty - remaining;
+      const avgPrice = totalCost / totalFilled;
+      const l1Price = askLevels[0].price;
+      const slippagePerShare = avgPrice - l1Price;
+      const slippagePct = (slippagePerShare / l1Price) * 100;
+
+      breakdownHtml += `\n────────────────────────────────────────────────────\n`;
+      breakdownHtml += `Total Filled       : <span class="success">${totalFilled.toLocaleString()} shares</span>\n`;
+      breakdownHtml += `Total Capital Used : <span class="highlight">₹${totalCost.toLocaleString('en-IN', {maximumFractionDigits: 2})}</span>\n`;
+      breakdownHtml += `Average Fill Price : <span class="warning">₹${avgPrice.toFixed(3)}</span> (Best Ask was ₹${l1Price.toFixed(2)})\n`;
+      breakdownHtml += `Market Impact / Slippage : <span class="danger">+₹${slippagePerShare.toFixed(3)} / share (+${slippagePct.toFixed(4)}%)</span>\n`;
+
+      outputBox.innerHTML = breakdownHtml.replace(/\n/g, '<br>');
+    }
+
+    // Live Indian Friction Calculator
+    function updateCalculator() {
+      const buyPrice = parseFloat(document.getElementById('inputBuy').value);
+      const sellPrice = parseFloat(document.getElementById('inputSell').value);
+      const qty = parseInt(document.getElementById('inputQty').value);
+      const tradesPerDay = parseInt(document.getElementById('inputTrades').value);
+
+      document.getElementById('valBuy').innerText = '₹' + buyPrice.toFixed(2);
+      document.getElementById('valSell').innerText = '₹' + sellPrice.toFixed(2);
+      document.getElementById('valQty').innerText = qty.toLocaleString();
+      document.getElementById('valTrades').innerText = tradesPerDay;
+
+      const buyVal = buyPrice * qty;
+      const sellVal = sellPrice * qty;
+      const turnover = buyVal + sellVal;
+      const gross = sellVal - buyVal;
+
+      // Indian Equity Intraday Statutory Cost Logic:
+      // Brokerage: ₹20 or 0.03% (whichever lower) per leg
+      const brokerageBuy = Math.min(buyVal * 0.0003, 20.0);
+      const brokerageSell = Math.min(sellVal * 0.0003, 20.0);
+      const totalBrokerage = brokerageBuy + brokerageSell;
+
+      // STT: 0.025% on sell side only
+      const stt = sellVal * 0.00025;
+
+      // Exchange txn charges: ~0.00297% on both sides
+      const exchangeTxn = turnover * 0.0000297;
+
+      // SEBI charges: 0.0001% on turnover
+      const sebi = turnover * 0.000001;
+
+      // Stamp duty: 0.003% on buy side, capped at 300
+      const stamp = Math.min(buyVal * 0.00003, 300.0);
+
+      // GST: 18% on (Brokerage + Exchange Txn + SEBI)
+      const gst = 0.18 * (totalBrokerage + exchangeTxn + sebi);
+
+      const totalCosts = totalBrokerage + stt + exchangeTxn + sebi + stamp + gst;
+      const net = gross - totalCosts;
+
+      // Yearly Drag calculation (assuming 250 trading days)
+      const costPerTradePct = (totalCosts / buyVal) * 100;
+      const dailyDrag = costPerTradePct * tradesPerDay;
+      const yearlyDrag = dailyDrag * 250;
+
+      // Render Values
+      document.getElementById('resGross').innerText = (gross >= 0 ? '+' : '') + '₹' + gross.toFixed(2);
+      document.getElementById('resGross').style.color = gross >= 0 ? '#34D399' : '#F87171';
+
+      document.getElementById('resBrokerage').innerText = '₹' + totalBrokerage.toFixed(2);
+      document.getElementById('resSTT').innerText = '₹' + stt.toFixed(2);
+      document.getElementById('resTxn').innerText = '₹' + exchangeTxn.toFixed(2);
+      document.getElementById('resSEBI').innerText = '₹' + sebi.toFixed(2);
+      document.getElementById('resStamp').innerText = '₹' + stamp.toFixed(2);
+      document.getElementById('resGST').innerText = '₹' + gst.toFixed(2);
+
+      document.getElementById('resTotalCosts').innerText = '₹' + totalCosts.toFixed(2);
+      document.getElementById('resNet').innerText = (net >= 0 ? '+' : '') + '₹' + net.toFixed(2);
+      document.getElementById('resNet').style.color = net >= 0 ? '#10B981' : '#EF4444';
+
+      document.getElementById('resYearlyDrag').innerText = yearlyDrag.toFixed(1) + '% / year';
+    }
+
+    // Toggle Quiz Card
+    function toggleQuiz(card) {
+      card.classList.toggle('active');
+    }
+
+    // Initialize on load
+    window.onload = function() {
+      simulateMarketBuy();
+      updateCalculator();
+    };
+  </script>
+</body>
+</html>

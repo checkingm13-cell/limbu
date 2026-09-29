@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mean Reversion Backtest Report | Quantitative Analytics</title>
+    <style>
+        body { background-color: #0B0F19; color: #F3F4F6; font-family: -apple-system, sans-serif; padding: 2rem; margin: 0; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .card { background: #131B2E; border: 1px solid #243256; border-radius: 8px; padding: 1.2rem; text-align: center; }
+        .card-val { font-size: 1.8rem; font-weight: bold; margin-top: 0.5rem; }
+        .green { color: #10B981; }
+        .red { color: #EF4444; }
+        .chart-box { background: #131B2E; border: 1px solid #243256; border-radius: 8px; padding: 1rem; margin-bottom: 2rem; text-align: center; }
+        .chart-box img { max-width: 100%; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; background: #131B2E; border-radius: 8px; overflow: hidden; font-size: 0.95rem; }
+        th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #243256; }
+        th { background: #1C2640; color: #9CA3AF; }
+        .profit { color: #10B981; font-weight: bold; }
+        .loss { color: #EF4444; font-weight: bold; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .badge-long { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .badge-short { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+        .tag { background: #1C2640; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; color: #9CA3AF; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Quantitative Mean Reversion Backtest Report</h1>
+        <p style="color: #9CA3AF;">Instrument: BTC/USDT | Timeframe: 1-Minute | Model: VWAP + Z-Score Asymmetric Exit (0.5σ)</p>
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <div style="color: #9CA3AF; font-size: 0.85rem;">ACCURACY (WIN RATE)</div>
+            <div class="card-val green">100.0%</div>
+        </div>
+        <div class="card">
+            <div style="color: #9CA3AF; font-size: 0.85rem;">TOTAL RETURN</div>
+            <div class="card-val green">+0.29%</div>
+        </div>
+        <div class="card">
+            <div style="color: #9CA3AF; font-size: 0.85rem;">PROFIT FACTOR</div>
+            <div class="card-val green">inf</div>
+        </div>
+        <div class="card">
+            <div style="color: #9CA3AF; font-size: 0.85rem;">MAX DRAWDOWN</div>
+            <div class="card-val red">0.00%</div>
+        </div>
+        <div class="card">
+            <div style="color: #9CA3AF; font-size: 0.85rem;">TOTAL TRADES</div>
+            <div class="card-val" style="color: #3B82F6;">5</div>
+        </div>
+    </div>
+
+    <div class="chart-box">
+        <h3 style="margin-top: 0; color: #9CA3AF;">Visual Execution & Equity Curve</h3>
+        <img src="backtest_results.png" alt="Backtest Chart">
+    </div>
+
+    <h3>Recent Trade Log (Sample of 50 Trades)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Type</th>
+                <th>Entry Price</th>
+                <th>Exit Price</th>
+                <th>PnL (%)</th>
+                <th>PnL ($)</th>
+                <th>Duration</th>
+                <th>Exit Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        <tr>
+            <td>#1</td>
+            <td><span class="badge badge-long">LONG</span></td>
+            <td>$84571.00</td>
+            <td>$84615.09</td>
+            <td class="profit">+0.05%</td>
+            <td class="profit">$+4.41</td>
+            <td>5 mins</td>
+            <td><span class="tag">MEAN EXIT</span></td>
+        </tr>
+        
+        <tr>
+            <td>#2</td>
+            <td><span class="badge badge-long">LONG</span></td>
+            <td>$84733.60</td>
+            <td>$84779.42</td>
+            <td class="profit">+0.05%</td>
+            <td class="profit">$+4.58</td>
+            <td>6 mins</td>
+            <td><span class="tag">MEAN EXIT</span></td>
+        </tr>
+        
+        <tr>
+            <td>#3</td>
+            <td><span class="badge badge-short">SHORT</span></td>
+            <td>$84640.04</td>
+            <td>$84576.00</td>
+            <td class="profit">+0.08%</td>
+            <td class="profit">$+6.40</td>
+            <td>3 mins</td>
+            <td><span class="tag">MEAN EXIT</span></td>
+        </tr>
+        
+        <tr>
+            <td>#4</td>
+            <td><span class="badge badge-short">SHORT</span></td>
+            <td>$84228.00</td>
+            <td>$84190.00</td>
+            <td class="profit">+0.05%</td>
+            <td class="profit">$+3.80</td>
+            <td>14 mins</td>
+            <td><span class="tag">MEAN EXIT</span></td>
+        </tr>
+        
+        <tr>
+            <td>#5</td>
+            <td><span class="badge badge-long">LONG</span></td>
+            <td>$83109.08</td>
+            <td>$83208.66</td>
+            <td class="profit">+0.12%</td>
+            <td class="profit">$+9.96</td>
+            <td>3 mins</td>
+            <td><span class="tag">MEAN EXIT</span></td>
+        </tr>
+        
+        </tbody>
+    </table>
+</body>
+</html>

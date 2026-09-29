@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quant Data Engineering — The Visual Interactive Machine</title>
+  <style>
+    :root {
+      --bg-dark: #070B14;
+      --bg-card: #0D1527;
+      --bg-elevated: #15223D;
+      --border: #1E3158;
+      --border-bright: #3B82F6;
+      --green: #10B981;
+      --green-glow: rgba(16, 185, 129, 0.4);
+      --red: #EF4444;
+      --red-glow: rgba(239, 68, 68, 0.4);
+      --purple: #8B5CF6;
+      --purple-glow: rgba(139, 92, 246, 0.4);
+      --amber: #F59E0B;
+      --blue: #38BDF8;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --font-mono: "Fira Code", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text);
+      overflow-x: hidden;
+      padding-bottom: 4rem;
+    }
+
+    /* Ambient Glow Background */
+    .ambient-bg {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 600px;
+      background: radial-gradient(circle at 50% -10%, rgba(139, 92, 246, 0.18) 0%, rgba(56, 189, 248, 0.05) 50%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* HERO HEADER */
+    .hero-panel {
+      text-align: center;
+      padding: 3rem 1rem 2rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: 999px;
+      color: #C4B5FD;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    h1.hero-title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #FFF 30%, #A78BFA 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+    }
+
+    p.hero-sub {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      max-width: 700px;
+      margin: 0 auto 2rem;
+    }
+
+    /* VISUAL PIPELINE (RIVER TO REFINERY) */
+    .pipeline-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 3.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1.2fr auto 1fr;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .pipeline-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .pipeline-arrow {
+        transform: rotate(90deg);
+        margin: 0 auto;
+      }
+    }
+
+    .stage-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      position: relative;
+    }
+
+    .stage-card.dirty {
+      border-color: rgba(239, 68, 68, 0.5);
+      background: linear-gradient(180deg, rgba(239, 68, 68, 0.08), var(--bg-elevated));
+    }
+
+    .stage-card.refinery {
+      border-color: rgba(139, 92, 246, 0.5);
+      background: linear-gradient(180deg, rgba(139, 92, 246, 0.08), var(--bg-elevated));
+    }
+
+    .stage-card.clean {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.08), var(--bg-elevated));
+    }
+
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 800;
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .token-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    .token-dirty {
+      background: rgba(239, 68, 68, 0.15);
+      color: #FCA5A5;
+      border: 1px dashed rgba(239, 68, 68, 0.3);
+    }
+
+    .token-refinery {
+      background: rgba(139, 92, 246, 0.15);
+      color: #DDD6FE;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .token-clean {
+      background: rgba(16, 185, 129, 0.15);
+      color: #86EFAC;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .pipeline-arrow {
+      font-size: 1.5rem;
+      color: #64748B;
+      font-weight: 900;
+    }
+
+    /* SECTION TITLES */
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .sec-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--purple);
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1rem;
+      box-shadow: 0 0 15px var(--purple-glow);
+    }
+
+    .sec-title {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #FFF;
+    }
+
+    /* INTERACTIVE CANDLE BUILDER */
+    .lab-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      position: relative;
+    }
+
+    .candle-arena {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 860px) {
+      .candle-arena {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Canvas Screen */
+    .canvas-screen {
+      background: #060911;
+      border: 1px solid #1E293B;
+      border-radius: 12px;
+      padding: 1rem;
+      height: 340px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #tickCanvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Control Panel */
+    .controls-panel {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .metric-pill-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin: 1rem 0;
+    }
+
+    .metric-pill {
+      background: #080C16;
+      border: 1px solid #1E293B;
+      border-radius: 8px;
+      padding: 0.5rem 0.65rem;
+    }
+
+    .metric-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      display: block;
+    }
+
+    .metric-value {
+      font-size: 1.05rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+    }
+
+    .btn {
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+      color: #FFF;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    }
+
+    .btn-subtle {
+      background: #1E293B;
+      color: #CBD5E1;
+      border: 1px solid #334155;
+    }
+
+    .btn-subtle:hover {
+      background: #334155;
+    }
+
+    /* THE 4 BAR TYPES VISUAL SLIDER */
+    .bar-comparison-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .market-tempo-slider-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tempo-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .tempo-tag {
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+
+    input[type=range] {
+      width: 100%;
+      height: 8px;
+      background: #1E293B;
+      border-radius: 4px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--blue);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--blue);
+      border: 2px solid #FFF;
+    }
+
+    .bars-lane-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .lane-box {
+      background: #080D1A;
+      border: 1px solid #1E293B;
+      border-radius: 10px;
+      padding: 1rem;
+      position: relative;
+    }
+
+    .lane-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lane-vis {
+      height: 70px;
+      background: #050811;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+      overflow-x: auto;
+      border: 1px dashed #1E293B;
+    }
+
+    .bar-slice {
+      height: 45px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #FFF;
+      flex-shrink: 0;
+      animation: popIn 0.3s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* THE NON-STATIONARITY BEAST */
+    .stationarity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 800px) {
+      .stationarity-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .stat-chart-container {
+      height: 180px;
+      background: #050811;
+      border: 1px solid #1E293B;
+      border-radius: 8px;
+      margin: 1rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* CORPORATE ACTIONS LAB */
+    .actions-lab {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .split-vis-canvas {
+      height: 220px;
+      background: #060911;
+      border: 1px solid #1E293B;
+      border-radius: 10px;
+      margin: 1.25rem 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bot-reaction-theatre {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 700px) {
+      .bot-reaction-theatre {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bot-actor {
+      background: #080D1A;
+      border: 1px solid #1E293B;
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      transition: all 0.3s;
+    }
+
+    .bot-avatar {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .bot-dialogue {
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    /* THE SURVIVORSHIP TIME MACHINE */
+    .time-machine-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .year-dial {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .graveyard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .stock-chip {
+      background: #070B14;
+      border: 1px solid #1E293B;
+      border-radius: 8px;
+      padding: 0.6rem;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: all 0.3s;
+    }
+
+    .stock-chip.dead {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.08);
+      color: #F87171;
+      text-decoration: line-through;
+    }
+
+    .stock-chip.winner {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.08);
+      color: #34D399;
+    }
+
+    /* THE BOUNCER CONVEYOR */
+    .bouncer-arena {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .conveyor-belt {
+      background: #060911;
+      border: 1px solid #1E293B;
+      border-radius: 12px;
+      height: 120px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .bouncer-scanner {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      background: rgba(139, 92, 246, 0.15);
+      border-left: 2px dashed #A78BFA;
+      border-right: 2px dashed #A78BFA;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #DDD6FE;
+    }
+
+    .interactive-tick-item {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: absolute;
+      transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* CHECKPOINT QUIZ */
+    .quiz-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quiz-card:hover {
+      border-color: var(--purple);
+    }
+
+    .quiz-card.open {
+      border-color: var(--purple);
+      background: #12182B;
+    }
+
+    .quiz-q {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      color: #F1F5F9;
+    }
+
+    .quiz-a {
+      display: none;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #1E293B;
+      color: #C4B5FD;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .quiz-card.open .quiz-a {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-bg"></div>
+
+  <div class="container">
+
+    <!-- HERO PANEL -->
+    <header class="hero-panel">
+      <div class="hero-badge">⚡ Level 02 — Data Engineering Architecture</div>
+      <h1 class="hero-title">Financial Data Engineering & Quality Gates</h1>
+      <p class="hero-sub">
+        Strategy code is 200 lines. The data cleaning pipeline is 2,000 lines. Watch how raw market ticks transform into institutional alpha.
+      </p>
+    </header>
+
+    <!-- 1. THE VISUAL PIPELINE (GARBAGE IN -> REFINERY -> CLEAN OUT) -->
+    <div class="pipeline-diagram">
+      <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+        The Quant Data Refinery
+      </div>
+      <h3 style="font-size: 1.25rem; color: #FFF; font-weight: 800;">From Toxic Market River to Pure Institutional Fuel</h3>
+
+      <div class="pipeline-grid">
+        <!-- STAGE 1: DIRTY -->
+        <div class="stage-card dirty">
+          <div class="stage-header" style="color: #F87171;">
+            <span>☣️ 1. Raw Toxic Feed</span>
+          </div>
+          <div class="token-chip token-dirty"><span>⏱️</span> 4 Trades on same millisecond</div>
+          <div class="token-chip token-dirty"><span>📉</span> 1:10 Split looks like -90% Crash</div>
+          <div class="token-chip token-dirty"><span>🌙</span> Phantom 2:00 AM weekend ticks</div>
+          <div class="token-chip token-dirty"><span>👻</span> Missing bars in illiquid scrips</div>
+        </div>
+
+        <div class="pipeline-arrow">➔</div>
+
+        <!-- STAGE 2: REFINERY -->
+        <div class="stage-card refinery">
+          <div class="stage-header" style="color: #C4B5FD;">
+            <span>⚙️ 2. The Sanitizer</span>
+          </div>
+          <div class="token-chip token-refinery"><span>🛡️</span> Tick Bouncer (Circuit & Spike Guard)</div>
+          <div class="token-chip token-refinery"><span>🔄</span> Left-Label Closed Resampler</div>
+          <div class="token-chip token-refinery"><span>📐</span> Back-Adjustment Engine (Splits/Divs)</div>
+          <div class="token-chip token-refinery"><span>⏱️</span> Hard <code>Asia/Kolkata</code> Timestamp Lock</div>
+        </div>
+
+        <div class="pipeline-arrow">➔</div>
+
+        <!-- STAGE 3: CLEAN -->
+        <div class="stage-card clean">
+          <div class="stage-header" style="color: #34D399;">
+            <span>💎 3. Clean Alpha Stream</span>
+          </div>
+          <div class="token-chip token-clean"><span>📊</span> Stationary Log Returns</div>
+          <div class="token-chip token-clean"><span>🕯️</span> True OHLCV + VWAP Candles</div>
+          <div class="token-chip token-clean"><span>💵</span> Statistically Sound Dollar Bars</div>
+          <div class="token-chip token-clean"><span>🎯</span> Point-In-Time Index Membership</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. RESAMPLING TICK TO BAR SIMULATOR -->
+    <div class="section-head">
+      <div class="sec-num">01</div>
+      <div class="sec-title">Interactive Resampler: Watch Ticks Forge a Candle</div>
+    </div>
+
+    <div class="lab-box">
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+        Click <strong>"Drop Next Tick"</strong> to fire simulated trades into the 1-minute window (09:15:00). Watch the Open, High, Low, and Close dynamically stretch the candle body and wick!
+      </p>
+
+      <div class="candle-arena">
+        <!-- CANVAS SCREEN -->
+        <div class="canvas-screen">
+          <canvas id="tickCanvas"></canvas>
+        </div>
+
+        <!-- METRICS & BUTTONS -->
+        <div class="controls-panel">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.85rem; font-weight: 800; color: #94A3B8;">BAR: 09:15:00 (LEFT LABEL)</span>
+              <span id="tickBadge" style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.2); color: #38BDF8; padding: 2px 6px; border-radius: 4px; font-weight: 700;">4 Ticks</span>
+            </div>
+
+            <div class="metric-pill-grid">
+              <div class="metric-pill">
+                <span class="metric-label">Open</span>
+                <span class="metric-value" id="valOpen" style="color: #FFF;">₹2,450.00</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-label">High</span>
+                <span class="metric-value" id="valHigh" style="color: #34D399;">₹2,450.05</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-label">Low</span>
+                <span class="metric-value" id="valLow" style="color: #F87171;">₹2,449.90</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-label">Close</span>
+                <span class="metric-value" id="valClose" style="color: #FFF;">₹2,449.90</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-label">Volume</span>
+                <span class="metric-value" id="valVol" style="color: #FCD34D;">760</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-label">VWAP</span>
+                <span class="metric-value" id="valVWAP" style="color: #38BDF8;">₹2,449.95</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button class="btn btn-action" onclick="addRandomTick()">⚡ Drop Next Tick</button>
+            <button class="btn btn-subtle" onclick="resetCandleLab()">↺ Reset 1-Min Bar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. THE 4 BAR FAMILIES (TEMPO SLIDER) -->
+    <div class="section-head">
+      <div class="sec-num">02</div>
+      <div class="sec-title">The 4 Bar Families: Escaping the Time-Bar Trap</div>
+    </div>
+
+    <div class="bar-comparison-card">
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.25rem;">
+        Retail chart platforms only give you <strong>Time Bars</strong>. But market activity fluctuates wildly. Slide the market intensity below to see how Volume & Dollar bars adapt while Time bars stay dumb:
+      </p>
+
+      <div class="market-tempo-slider-box">
+        <div class="tempo-status">
+          <span style="font-size: 0.95rem;">Market Activity Level:</span>
+          <span class="tempo-tag" id="tempoTag" style="background: rgba(56, 189, 248, 0.2); color: #38BDF8;">10:00 AM (Normal Flow)</span>
+        </div>
+        <input type="range" id="tempoSlider" min="1" max="4" value="2" oninput="updateTempo(this.value)">
+      </div>
+
+      <div class="bars-lane-grid">
+        <!-- LANE 1: TIME BARS -->
+        <div class="lane-box">
+          <div class="lane-title">
+            <span style="color: #94A3B8;">⏰ Time Bars (1-Min)</span>
+            <span id="countTime" style="color: #FFF;">3 bars</span>
+          </div>
+          <div class="lane-vis" id="laneTime">
+            <div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div>
+            <div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div>
+            <div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div>
+          </div>
+          <div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem;">
+            ⚠️ Fixed time ticks even if zero trades happen.
+          </div>
+        </div>
+
+        <!-- LANE 2: VOLUME BARS -->
+        <div class="lane-box">
+          <div class="lane-title">
+            <span style="color: #6EE7B7;">📦 Volume Bars (5k shares)</span>
+            <span id="countVol" style="color: #FFF;">3 bars</span>
+          </div>
+          <div class="lane-vis" id="laneVol">
+            <div class="bar-slice" style="width: 55px; background: #10B981;">5k</div>
+            <div class="bar-slice" style="width: 55px; background: #10B981;">5k</div>
+            <div class="bar-slice" style="width: 55px; background: #10B981;">5k</div>
+          </div>
+          <div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem;">
+            ✔ Samples faster when big orders hit.
+          </div>
+        </div>
+
+        <!-- LANE 3: DOLLAR BARS -->
+        <div class="lane-box" style="border-color: rgba(245, 158, 11, 0.4);">
+          <div class="lane-title">
+            <span style="color: #FCD34D;">💰 Dollar Bars (₹1 Crore)</span>
+            <span id="countDollar" style="color: #FFF;">2 bars</span>
+          </div>
+          <div class="lane-vis" id="laneDollar">
+            <div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div>
+            <div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div>
+          </div>
+          <div style="font-size: 0.75rem; color: #FCD34D; margin-top: 0.5rem;">
+            🏆 <strong>Hedge Fund Standard:</strong> Stable variance.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. NON-STATIONARITY: PRICES VS LOG RETURNS -->
+    <div class="section-head">
+      <div class="sec-num">03</div>
+      <div class="sec-title">Non-Stationarity: Why Raw Prices Break ML Models</div>
+    </div>
+
+    <div class="stationarity-grid">
+      <!-- PRICE -->
+      <div class="stat-card" style="border-color: rgba(239, 68, 68, 0.4);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="color: #F87171; font-size: 1.1rem;">📉 Raw Price (Non-Stationary)</h4>
+          <span style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.2); color: #FCA5A5; padding: 2px 6px; border-radius: 4px; font-weight: 700;">BAD FOR STATS</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">
+          Mean drifts upwards, variance expands. Correlating two random stocks yields fake 0.90 correlations.
+        </p>
+
+        <div class="stat-chart-container">
+          <svg viewBox="0 0 400 160" style="width:100%; height:100%;">
+            <!-- Upward drifting price path -->
+            <path d="M 10,130 Q 80,120 140,85 T 260,60 T 390,20" fill="none" stroke="#EF4444" stroke-width="3" />
+            <line x1="10" y1="140" x2="390" y2="140" stroke="#334155" stroke-dasharray="4" />
+            <text x="20" y="152" fill="#64748B" font-size="11">Time &rarr;</text>
+            <text x="310" y="35" fill="#EF4444" font-weight="bold" font-size="12">Drifting Mean</text>
+          </svg>
+        </div>
+
+        <div style="font-size: 0.8rem; color: #94A3B8; font-family: var(--font-mono); background: #060911; padding: 0.5rem; border-radius: 6px;">
+          Mean(t) &ne; Mean(t+k) &nbsp;| Variance &rarr; &infin;
+        </div>
+      </div>
+
+      <!-- LOG RETURNS -->
+      <div class="stat-card" style="border-color: rgba(16, 185, 129, 0.4);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="color: #34D399; font-size: 1.1rem;">📈 Log Returns (Stationary)</h4>
+          <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.2); color: #86EFAC; padding: 2px 6px; border-radius: 4px; font-weight: 700;">QUANT NATIVE</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">
+          <code>ln(P_t / P_{t-1})</code> oscillates cleanly around zero. Statistically normal-ish, additive, and symmetrical.
+        </p>
+
+        <div class="stat-chart-container">
+          <svg viewBox="0 0 400 160" style="width:100%; height:100%;">
+            <!-- Stationary oscillations around 0 -->
+            <line x1="10" y1="80" x2="390" y2="80" stroke="#38BDF8" stroke-dasharray="4" />
+            <path d="M 10,80 L 35,55 L 60,95 L 90,65 L 120,80 L 150,45 L 180,105 L 210,75 L 240,82 L 270,60 L 300,90 L 330,75 L 360,85 L 390,78" fill="none" stroke="#10B981" stroke-width="2.5" />
+            <text x="20" y="72" fill="#38BDF8" font-size="11">Mean = 0.00</text>
+            <text x="320" y="60" fill="#10B981" font-weight="bold" font-size="12">Stationary</text>
+          </svg>
+        </div>
+
+        <div style="font-size: 0.8rem; color: #94A3B8; font-family: var(--font-mono); background: #060911; padding: 0.5rem; border-radius: 6px;">
+          Symmetric: +10% then -10% = Net 0.00
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. CORPORATE ACTIONS: THE 90% SPLIT BOMBSHELL -->
+    <div class="section-head">
+      <div class="sec-num">04</div>
+      <div class="sec-title">Corporate Actions: The 90% Crash Simulator</div>
+    </div>
+
+    <div class="actions-lab">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <h4 style="color: #FFF; font-size: 1.15rem;">MRF Stock: 1:10 Stock Split Demonstration</h4>
+          <span style="color: var(--text-muted); font-size: 0.85rem;">See how unadjusted corporate data causes algorithm suicide.</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-action" id="btnModeRaw" onclick="setSplitLab('raw')">🚨 Raw Feed (Unadjusted)</button>
+          <button class="btn btn-subtle" id="btnModeAdj" onclick="setSplitLab('adjusted')">🛡️ Back-Adjusted Feed</button>
+        </div>
+      </div>
+
+      <!-- VISUAL SPLIT SCREEN -->
+      <div class="split-vis-canvas" id="splitCanvasBox">
+        <svg viewBox="0 0 800 200" style="width:100%; height:100%;" id="splitSvgElement">
+          <!-- Populated by JS -->
+        </svg>
+      </div>
+
+      <!-- BOT REACTIONS -->
+      <div class="bot-reaction-theatre">
+        <div class="bot-actor" id="botMomentumBox">
+          <div class="bot-avatar">🤖</div>
+          <div class="bot-dialogue">
+            <strong style="color: #F87171;">Momentum Engine:</strong><br>
+            <span id="botMomentumMsg">"ALERT: Price fell from ₹150,000 to ₹15,000 (-90%). Executing emergency maximum SHORT orders!"</span>
+          </div>
+        </div>
+
+        <div class="bot-actor" id="botMeanRevBox">
+          <div class="bot-avatar">🧠</div>
+          <div class="bot-dialogue">
+            <strong style="color: #FCD34D;">Mean Reversion Engine:</strong><br>
+            <span id="botMeanRevMsg">"Z-score hit -45.0! Asset is ridiculously oversold! Liquidation discount! ALL IN BUY!"</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. THE SURVIVORSHIP TIME MACHINE -->
+    <div class="section-head">
+      <div class="sec-num">05</div>
+      <div class="sec-title">The Survivorship Bias Time Machine</div>
+    </div>
+
+    <div class="time-machine-container">
+      <div class="year-dial">
+        <div>
+          <h4 style="color: #FFF; font-size: 1.1rem;">Nifty 50 Index Roster Over Time</h4>
+          <span style="color: var(--text-muted); font-size: 0.85rem;">Testing today's list on 2015 data secretly deletes the bankrupt companies.</span>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 0.8rem; color: #A78BFA; font-weight: 700; text-transform: uppercase;">Selected Year:</span>
+          <div id="yearDisplay" style="font-size: 1.5rem; font-weight: 900; color: #FCD34D;">2015</div>
+        </div>
+      </div>
+
+      <input type="range" id="yearSlider" min="2015" max="2026" value="2015" step="1" oninput="updateYear(this.value)">
+
+      <div class="graveyard-grid" id="stockRoster">
+        <!-- Generated by JS -->
+      </div>
+
+      <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 0.9rem; margin-top: 1.25rem; font-size: 0.85rem;">
+        💡 <strong>The Engineering Solution:</strong> Use a <code>Point-in-Time (PIT)</code> database table with <code>effective_from</code> and <code>effective_to</code> dates. Never query modern index constituents when testing the past!
+      </div>
+    </div>
+
+    <!-- 7. THE DATA BOUNCER GATE -->
+    <div class="section-head">
+      <div class="sec-num">06</div>
+      <div class="sec-title">The Data Bouncer: Pre-Ingestion Security Gates</div>
+    </div>
+
+    <div class="bouncer-arena">
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        Click any incoming test tick to see how the validation gateway handles it before it can pollute the feature store:
+      </p>
+
+      <div class="conveyor-belt">
+        <div class="bouncer-scanner">
+          <span>SCANNER</span>
+          <span style="font-size: 1rem;">🛡️</span>
+        </div>
+        <div id="interactiveTick" class="interactive-tick-item" style="left: 30px; background: rgba(56, 189, 248, 0.2); border: 1px solid #38BDF8; color: #E0F2FE;">
+          RELIANCE @ ₹2,450.00
+        </div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+        <button class="btn btn-subtle" onclick="sendBouncerTick('normal')">Test Clean Tick (₹2,450.00)</button>
+        <button class="btn btn-subtle" onclick="sendBouncerTick('spike')">Test +18% Spike (₹2,890.00)</button>
+        <button class="btn btn-subtle" onclick="sendBouncerTick('midnight')">Test 2:00 AM Tick</button>
+        <button class="btn btn-subtle" onclick="sendBouncerTick('negative')">Test Corrupt Negative Price</button>
+      </div>
+
+      <div id="bouncerLog" style="background: #060911; border: 1px solid #1E293B; border-radius: 8px; padding: 0.9rem; font-family: var(--font-mono); font-size: 0.85rem; color: #94A3B8; min-height: 50px;">
+        Ready. Select a test tick above.
+      </div>
+    </div>
+
+    <!-- 8. CHECKPOINT QUESTIONS -->
+    <div class="section-head">
+      <div class="sec-num">07</div>
+      <div class="sec-title">Visual Knowledge Checkpoint</div>
+    </div>
+
+    <div class="quiz-card" onclick="this.classList.toggle('open')">
+      <div class="quiz-q">
+        <span>1. Why does label="right" secretly leak future prices into the past?</span>
+        <span style="color: #A78BFA;">▼</span>
+      </div>
+      <div class="quiz-a">
+        Setting <code>label="right"</code> timestamps the bar using the end boundary (09:16) for ticks collected between 09:15:00 and 09:15:59. Your backtest code at 09:15 mistakenly thinks this completed data was already known, causing lookahead bias.
+      </div>
+    </div>
+
+    <div class="quiz-card" onclick="this.classList.toggle('open')">
+      <div class="quiz-q">
+        <span>2. Why are Log Returns additive over time, while Simple Returns are not?</span>
+        <span style="color: #A78BFA;">▼</span>
+      </div>
+      <div class="quiz-a">
+        Because <code>ln(P2/P0) = ln(P2/P1) + ln(P1/P0)</code>. You can calculate a 5-minute return by simply summing five 1-minute log returns. Simple returns require compounding multiplication: <code>(1+r1)*(1+r2) - 1</code>.
+      </div>
+    </div>
+
+    <div class="quiz-card" onclick="this.classList.toggle('open')">
+      <div class="quiz-q">
+        <span>3. Why must live orders ALWAYS use unadjusted prices?</span>
+        <span style="color: #A78BFA;">▼</span>
+      </div>
+      <div class="quiz-a">
+        Adjusted prices are mathematical fictions created for continuous backtesting. The real NSE matching engine only understands raw Last Traded Price (LTP). Sending an order at the back-adjusted ₹15,000 for a stock trading at ₹150,000 will be instantly rejected.
+      </div>
+    </div>
+
+    <div class="quiz-card" onclick="this.classList.toggle('open')">
+      <div class="quiz-q">
+        <span>4. What is the danger of using ffill() on missing bars in illiquid stocks?</span>
+        <span style="color: #A78BFA;">▼</span>
+      </div>
+      <div class="quiz-a">
+        <code>ffill()</code> fabricates synthetic candles with identical Open, High, Low, and Close. An algorithm interprets this zero-movement candle as "ultra-low volatility stability," hiding the fact that zero buyers existed in the market!
+      </div>
+    </div>
+
+    <div class="quiz-card" onclick="this.classList.toggle('open')">
+      <div class="quiz-q">
+        <span>5. Why do Dollar Bars have better statistical properties than Time Bars?</span>
+        <span style="color: #A78BFA;">▼</span>
+      </div>
+      <div class="quiz-a">
+        Dollar bars slice data every time ₹N turnover transacts. They accelerate bar generation during heavy institutional trading bursts and slow down during dead midday lunch lulls. The resulting returns are significantly closer to a normal Gaussian distribution.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    // -------------------------------------------------------------
+    // 1. CANDLE BUILDER SIMULATOR
+    // -------------------------------------------------------------
+    const canvas = document.getElementById('tickCanvas');
+    const ctx = canvas.getContext('2d');
+    let candleTicks = [2450.00, 2450.05, 2450.05, 2449.90];
+    let candleVolumes = [50, 200, 10, 500];
+
+    function drawCandleScene() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw grid lines
+      ctx.strokeStyle = '#111827';
+      ctx.lineWidth = 1;
+      for (let y = 30; y < h; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      if (candleTicks.length === 0) return;
+
+      const open = candleTicks[0];
+      const close = candleTicks[candleTicks.length - 1];
+      const high = Math.max(...candleTicks);
+      const low = Math.min(...candleTicks);
+
+      const minP = Math.min(...candleTicks) - 0.20;
+      const maxP = Math.max(...candleTicks) + 0.20;
+      const range = maxP - minP || 1;
+
+      const getY = (p) => h - 50 - ((p - minP) / range) * (h - 100);
+
+      // Left: Tick scatter path
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.setLineDash([4, 4]);
+      const leftW = w * 0.55;
+      candleTicks.forEach((p, idx) => {
+        const x = 30 + (idx / Math.max(candleTicks.length - 1, 1)) * (leftW - 60);
+        const y = getY(p);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw individual tick dots
+      candleTicks.forEach((p, idx) => {
+        const x = 30 + (idx / Math.max(candleTicks.length - 1, 1)) * (leftW - 60);
+        const y = getY(p);
+        ctx.fillStyle = idx === 0 ? '#38BDF8' : (p >= candleTicks[idx-1] ? '#10B981' : '#EF4444');
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Right: Candlestick representation
+      const candleX = w * 0.78;
+      const isBullish = close >= open;
+      const color = isBullish ? '#10B981' : '#EF4444';
+
+      // High-Low Wick
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(candleX, getY(high));
+      ctx.lineTo(candleX, getY(low));
+      ctx.stroke();
+
+      // Open-Close Body
+      const topY = getY(Math.max(open, close));
+      const botY = getY(Math.min(open, close));
+      const bodyH = Math.max(botY - topY, 6);
+
+      ctx.fillStyle = color;
+      ctx.fillRect(candleX - 25, topY, 50, bodyH);
+
+      // Labels on screen
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('Tick Arrivals (09:15:00 - 09:15:59)', 20, 20);
+      ctx.fillText('Synthesized Bar', candleX - 40, 20);
+    }
+
+    function addRandomTick() {
+      const last = candleTicks[candleTicks.length - 1];
+      const step = (Math.random() - 0.48) * 0.25;
+      const nextP = parseFloat((last + step).toFixed(2));
+      const nextV = Math.floor(Math.random() * 250) + 20;
+
+      candleTicks.push(nextP);
+      candleVolumes.push(nextV);
+
+      // Update HUD
+      const open = candleTicks[0];
+      const close = candleTicks[candleTicks.length - 1];
+      const high = Math.max(...candleTicks);
+      const low = Math.min(...candleTicks);
+      const sumV = candleVolumes.reduce((a, b) => a + b, 0);
+
+      let pv = 0;
+      candleTicks.forEach((p, i) => pv += p * candleVolumes[i]);
+      const vwap = (pv / sumV).toFixed(2);
+
+      document.getElementById('valOpen').innerText = '₹' + open.toFixed(2);
+      document.getElementById('valHigh').innerText = '₹' + high.toFixed(2);
+      document.getElementById('valLow').innerText = '₹' + low.toFixed(2);
+      document.getElementById('valClose').innerText = '₹' + close.toFixed(2);
+      document.getElementById('valVol').innerText = sumV.toLocaleString();
+      document.getElementById('valVWAP').innerText = '₹' + vwap;
+      document.getElementById('tickBadge').innerText = candleTicks.length + ' Ticks';
+
+      drawCandleScene();
+    }
+
+    function resetCandleLab() {
+      candleTicks = [2450.00, 2450.05, 2450.05, 2449.90];
+      candleVolumes = [50, 200, 10, 500];
+      document.getElementById('valOpen').innerText = '₹2,450.00';
+      document.getElementById('valHigh').innerText = '₹2,450.05';
+      document.getElementById('valLow').innerText = '₹2,449.90';
+      document.getElementById('valClose').innerText = '₹2,449.90';
+      document.getElementById('valVol').innerText = '760';
+      document.getElementById('valVWAP').innerText = '₹2,449.95';
+      document.getElementById('tickBadge').innerText = '4 Ticks';
+      drawCandleScene();
+    }
+
+    // -------------------------------------------------------------
+    // 2. THE 4 BAR FAMILIES TEMPO SLIDER
+    // -------------------------------------------------------------
+    function updateTempo(val) {
+      const tag = document.getElementById('tempoTag');
+      const laneT = document.getElementById('laneTime');
+      const laneV = document.getElementById('laneVol');
+      const laneD = document.getElementById('laneDollar');
+
+      if (val == 1) {
+        tag.innerText = "1:30 PM (Midday Lunch Lull)";
+        tag.style.background = "rgba(100, 116, 139, 0.2)";
+        tag.style.color = "#94A3B8";
+        laneT.innerHTML = `<div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div><div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div>`;
+        laneV.innerHTML = `<div class="bar-slice" style="width: 55px; background: #10B981;">5k</div>`;
+        laneD.innerHTML = `<div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div>`;
+        document.getElementById('countTime').innerText = "2 bars (empty)";
+        document.getElementById('countVol').innerText = "1 bar";
+        document.getElementById('countDollar').innerText = "1 bar";
+      } else if (val == 2) {
+        tag.innerText = "10:00 AM (Normal Market Flow)";
+        tag.style.background = "rgba(56, 189, 248, 0.2)";
+        tag.style.color = "#38BDF8";
+        laneT.innerHTML = `<div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div><div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div><div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div>`;
+        laneV.innerHTML = `<div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div>`;
+        laneD.innerHTML = `<div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div>`;
+        document.getElementById('countTime').innerText = "3 bars";
+        document.getElementById('countVol').innerText = "3 bars";
+        document.getElementById('countDollar').innerText = "2 bars";
+      } else if (val == 3) {
+        tag.innerText = "9:16 AM (Opening Bell Institutional Surge)";
+        tag.style.background = "rgba(245, 158, 11, 0.2)";
+        tag.style.color = "#FCD34D";
+        laneT.innerHTML = `<div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div><div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div>`;
+        laneV.innerHTML = `<div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div>`;
+        laneD.innerHTML = `<div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div>`;
+        document.getElementById('countTime').innerText = "2 bars";
+        document.getElementById('countVol').innerText = "5 bars (dense)";
+        document.getElementById('countDollar').innerText = "4 bars (dense)";
+      } else {
+        tag.innerText = "2:45 PM (RBI Policy Announcement)";
+        tag.style.background = "rgba(239, 68, 68, 0.2)";
+        tag.style.color = "#FCA5A5";
+        laneT.innerHTML = `<div class="bar-slice" style="width: 50px; background: #3B82F6;">1m</div>`;
+        laneV.innerHTML = `<div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div><div class="bar-slice" style="width: 55px; background: #10B981;">5k</div>`;
+        laneD.innerHTML = `<div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div><div class="bar-slice" style="width: 65px; background: #F59E0B;">₹1Cr</div>`;
+        document.getElementById('countTime').innerText = "1 bar (diluted)";
+        document.getElementById('countVol').innerText = "7 bars (micro-precision)";
+        document.getElementById('countDollar').innerText = "6 bars (perfect slice)";
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 3. CORPORATE ACTIONS SPLIT LAB
+    // -------------------------------------------------------------
+    function setSplitLab(mode) {
+      const svg = document.getElementById('splitSvgElement');
+      const btnRaw = document.getElementById('btnModeRaw');
+      const btnAdj = document.getElementById('btnModeAdj');
+      const botMom = document.getElementById('botMomentumMsg');
+      const botMR = document.getElementById('botMeanRevMsg');
+      const cardMom = document.getElementById('botMomentumBox');
+      const cardMR = document.getElementById('botMeanRevBox');
+
+      if (mode === 'raw') {
+        btnRaw.className = "btn btn-action";
+        btnAdj.className = "btn btn-subtle";
+
+        svg.innerHTML = `
+          <!-- Unadjusted Path: Violent Drop -->
+          <polyline points="20,40 180,45 380,42 400,165 600,168 780,162" fill="none" stroke="#EF4444" stroke-width="3.5" />
+          <line x1="400" y1="10" x2="400" y2="185" stroke="#F59E0B" stroke-dasharray="5" />
+          <text x="410" y="25" fill="#F59E0B" font-size="12" font-weight="bold">1:10 SPLIT DATE</text>
+          <text x="30" y="30" fill="#94A3B8" font-size="12">Raw: ₹150,000</text>
+          <text x="650" y="155" fill="#EF4444" font-size="13" font-weight="bold">Raw: ₹15,000 (-90%)</text>
+        `;
+
+        botMom.innerText = '"ALERT: Price fell from ₹150,000 to ₹15,000 (-90%). Executing emergency maximum SHORT orders!"';
+        botMR.innerText = '"Z-score hit -45.0! Asset is ridiculously oversold! Liquidation discount! ALL IN BUY!"';
+        cardMom.style.borderColor = "rgba(239, 68, 68, 0.6)";
+        cardMR.style.borderColor = "rgba(239, 68, 68, 0.6)";
+      } else {
+        btnRaw.className = "btn btn-subtle";
+        btnAdj.className = "btn btn-action";
+
+        svg.innerHTML = `
+          <!-- Back-Adjusted Path: Smooth continuous line -->
+          <polyline points="20,162 180,165 380,164 400,165 600,168 780,162" fill="none" stroke="#10B981" stroke-width="3.5" />
+          <line x1="400" y1="10" x2="400" y2="185" stroke="#F59E0B" stroke-dasharray="5" />
+          <text x="410" y="25" fill="#F59E0B" font-size="12" font-weight="bold">1:10 SPLIT DATE (Back-Adjusted)</text>
+          <text x="30" y="150" fill="#10B981" font-size="12">Adjusted: ₹15,000</text>
+          <text x="650" y="150" fill="#10B981" font-size="12">Adjusted: ₹15,000</text>
+        `;
+
+        botMom.innerText = '"Continuous log return = -0.3%. Normal trading day. No false crash trigger."';
+        botMR.innerText = '"Z-score = -0.15. Mean reversion conditions normal. Zero false triggers."';
+        cardMom.style.borderColor = "rgba(16, 185, 129, 0.6)";
+        cardMR.style.borderColor = "rgba(16, 185, 129, 0.6)";
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 4. SURVIVORSHIP TIME MACHINE
+    // -------------------------------------------------------------
+    const stocks = [
+      { name: "RELIANCE", deadYear: 9999, addYear: 1995 },
+      { name: "TCS", deadYear: 9999, addYear: 2004 },
+      { name: "HDFCBANK", deadYear: 9999, addYear: 1996 },
+      { name: "INFY", deadYear: 9999, addYear: 1996 },
+      { name: "JETAIRWAYS", deadYear: 2019, addYear: 2005 },
+      { name: "DHFL", deadYear: 2019, addYear: 2015 },
+      { name: "RCOM", deadYear: 2018, addYear: 2006 },
+      { name: "UNITECH", deadYear: 2017, addYear: 2007 },
+      { name: "YESBANK", deadYear: 2020, addYear: 2015 },
+      { name: "TITAN", deadYear: 9999, addYear: 2018 },
+      { name: "BAJFINANCE", deadYear: 9999, addYear: 2017 },
+      { name: "ADANIENT", deadYear: 9999, addYear: 2022 }
+    ];
+
+    function updateYear(y) {
+      document.getElementById('yearDisplay').innerText = y;
+      const grid = document.getElementById('stockRoster');
+      grid.innerHTML = '';
+
+      stocks.forEach(s => {
+        const isDead = y >= s.deadYear;
+        const isNotYetAdded = y < s.addYear;
+
+        const chip = document.createElement('div');
+        chip.className = 'stock-chip';
+
+        if (isDead) {
+          chip.className += ' dead';
+          chip.innerText = s.name + ' 💀';
+        } else if (isNotYetAdded) {
+          chip.style.opacity = '0.35';
+          chip.innerText = s.name + ' (Soon)';
+        } else {
+          chip.className += ' winner';
+          chip.innerText = s.name + ' 🌟';
+        }
+        grid.appendChild(chip);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 5. THE BOUNCER CONVEYOR
+    // -------------------------------------------------------------
+    function sendBouncerTick(type) {
+      const tick = document.getElementById('interactiveTick');
+      const log = document.getElementById('bouncerLog');
+
+      // Reset
+      tick.style.left = '30px';
+
+      if (type === 'normal') {
+        tick.innerText = "RELIANCE @ ₹2,450.00 (10:14 AM)";
+        tick.style.borderColor = "#38BDF8";
+        tick.style.color = "#E0F2FE";
+        log.innerHTML = `<span style="color: #38BDF8;">[INCOMING]</span> RELIANCE ₹2,450.00... scanning...`;
+
+        setTimeout(() => {
+          tick.style.left = '85%';
+          log.innerHTML = `<span style="color: #10B981; font-weight: bold;">✔ BOUNCER: PASSED.</span> Single-tick move 0.04% within circuit limits. Forwarded to Feature Store.`;
+        }, 300);
+      } else if (type === 'spike') {
+        tick.innerText = "RELIANCE @ ₹2,890.00 (+18%)";
+        tick.style.borderColor = "#EF4444";
+        tick.style.color = "#FCA5A5";
+        log.innerHTML = `<span style="color: #FCD34D;">[INCOMING]</span> RELIANCE ₹2,890.00... scanning...`;
+
+        setTimeout(() => {
+          tick.style.left = '45%';
+          log.innerHTML = `<span style="color: #EF4444; font-weight: bold;">❌ BOUNCER: REJECTED & QUARANTINED.</span> Single tick jump >10% threshold. Sent to diagnostic inspection table!`;
+        }, 300);
+      } else if (type === 'midnight') {
+        tick.innerText = "NIFTY @ ₹24,500 (02:15 AM)";
+        tick.style.borderColor = "#EF4444";
+        tick.style.color = "#FCA5A5";
+        log.innerHTML = `<span style="color: #FCD34D;">[INCOMING]</span> NIFTY timestamp 02:15 AM...`;
+
+        setTimeout(() => {
+          tick.style.left = '45%';
+          log.innerHTML = `<span style="color: #EF4444; font-weight: bold;">❌ BOUNCER: DROPPED.</span> Outside trading session (09:15–15:30 IST). Prevented ghost bar corruption.`;
+        }, 300);
+      } else if (type === 'negative') {
+        tick.innerText = "INFY @ -₹10.00 (CORRUPTED)";
+        tick.style.borderColor = "#EF4444";
+        tick.style.color = "#FCA5A5";
+        log.innerHTML = `<span style="color: #FCD34D;">[INCOMING]</span> Checking payload value...`;
+
+        setTimeout(() => {
+          tick.style.left = '45%';
+          log.innerHTML = `<span style="color: #EF4444; font-weight: bold;">❌ BOUNCER: HARD REJECT.</span> Price <= 0. Telemetry error logged.`;
+        }, 300);
+      }
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+      drawCandleScene();
+      setSplitLab('raw');
+      updateYear(2015);
+    };
+
+    window.onresize = function() {
+      drawCandleScene();
+    };
+  </script>
+</body>
+</html>

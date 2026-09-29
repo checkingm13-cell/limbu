@@ -1,0 +1,19 @@
+Stop using simple moving averages for mean reversion. In a trending market, that is literally catching a falling knife.
+
+Here is why retail traders blow up: if a stock moves at 9:15 AM with 50,000 shares, and moves at lunch with only 200 shares, a normal moving average treats them equally. That is misleading.
+
+Institutional algorithms benchmark against VWAP—the Volume-Weighted Average Price. Price does not gravitate to an arbitrary average; it is magnetically pulled to where big money actually traded.
+
+Here is how quants trade it:
+
+First, measure the deviation: current price minus VWAP.
+
+Next, divide by volatility to calculate your Z-Score.
+
+When Z reaches plus 2 or minus 2, the price is stretched 2 standard deviations away. That is your statistical entry zone.
+
+Now, here is the secret most traders miss: Never wait for price to touch zero. In quantitative research, partial reversion back to 0.5 has a much higher win probability than waiting for a full reversal. Exiting at 0.5 dramatically increases your profit factor.
+
+And if you are worried heavy calculations will make you miss the move: all heavy statistics are done before market open. In live trading, a rolling buffer calculates your Z-score in under 1 microsecond.
+
+Comment "QUANT" below and I will send you the full mathematical breakdown and Python code.

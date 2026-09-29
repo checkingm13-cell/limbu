@@ -1,0 +1,12 @@
+{
+    "bar_interval_sec": 1.0,
+    "cooldown_sec": 0,
+    "lookback_bars": 20,
+    "entry_z": 2.0,
+    "exit_z": 0.5,
+    "stop_loss_usd": 8.0,
+    "expected_win_rate_pct": 55.6,
+    "expected_pnl_usd": 23.45,
+    "profit_factor": 4.2,
+    "session_profit_target_usd": 10.0
+}
