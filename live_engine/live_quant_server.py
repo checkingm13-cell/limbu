@@ -37,6 +37,7 @@ if hasattr(sys.stdout, 'reconfigure'):
 import numpy as np
 import websockets
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse, FileResponse
 import uvicorn
 from jev_client import JevClient
 
