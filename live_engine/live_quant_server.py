@@ -37,8 +37,20 @@ if hasattr(sys.stdout, 'reconfigure'):
 import numpy as np
 import websockets
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, FileResponse
 import uvicorn
+from jev_client import JevClient
+
+# Jev Brain 4 Instance
+jev_client = JevClient()
+latest_jev_decision = {
+    "action": "FLAT",
+    "confidence": 0.0,
+    "expected_move_bps": 0.0,
+    "regime": "INITIALIZING",
+    "model": jev_client.model,
+    "status": "APPROVED",
+    "last_updated": "Never"
+}
 
 # Disk Persistence Paths (kdb+ HDB equivalent)
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
@@ -511,15 +523,84 @@ async def disk_writer_worker():
         await asyncio.sleep(1.0)
 
 
+async def jev_evaluator_worker():
+    """Background worker evaluating Jev predictions every 30 seconds."""
+    global latest_jev_decision
+    print("[Brain4] Jev background evaluation worker started...")
+    
+    # Wait 10 seconds for initial ticks to accumulate
+    await asyncio.sleep(10.0)
+    
+    while True:
+        try:
+            rdb = quant_engine.rdb
+            if rdb.size > 20:
+                idx = (rdb.idx - 1) % rdb.capacity
+                cur_p = float(rdb.t_price[idx])
+                
+                # Sample past prices for momentum
+                n = min(rdb.size, 100)
+                past_idx = (rdb.idx - n) % rdb.capacity
+                past_p = float(rdb.t_price[past_idx])
+                
+                ret_1h_bps = ((cur_p - past_p) / past_p) * 10000.0 if past_p > 0 else 0.0
+                vwap_z = float(rdb.t_zscore[idx])
+                cvd = float(rdb.t_cvd[idx])
+                taker_ratio = 0.55 if cvd > 0 else 0.45
+                
+                snap = {
+                    "relative_returns_bps": {"r15m": round(ret_1h_bps * 0.4, 1), "r1h": round(ret_1h_bps, 1), "r4h": round(ret_1h_bps * 1.5, 1)},
+                    "categorical": {
+                        "momentum_1h": "positive" if ret_1h_bps > 10 else ("negative" if ret_1h_bps < -10 else "flat"),
+                        "volatility": "normal",
+                        "order_flow": "buying" if cvd > 0 else "selling"
+                    },
+                    "microstructure": {"vwap_z": round(vwap_z, 2), "funding_apr": 5.0, "taker_ratio": taker_ratio}
+                }
+                
+                # Non-blocking async API evaluation in thread pool
+                loop = asyncio.get_event_loop()
+                jev_res = await loop.run_in_executor(None, jev_client.predict_decision, snap)
+                
+                action = jev_res.get("action", "FLAT")
+                conf = float(jev_res.get("confidence", 0.5))
+                exp_move = float(jev_res.get("expected_move_bps", 0.0))
+                
+                # Brain 2 Veto Gate logic
+                veto_status = "APPROVED"
+                if action in ["LONG", "SHORT"]:
+                    if conf < 0.65:
+                        veto_status = f"VETOED (Confidence {conf*100:.0f}% < 65%)"
+                    elif abs(exp_move) < 28.5:
+                        veto_status = f"VETOED (Move {exp_move:.0f} bps < 28.5 bps hurdle)"
+                
+                latest_jev_decision = {
+                    "action": action,
+                    "confidence": conf,
+                    "expected_move_bps": exp_move,
+                    "regime": jev_res.get("regime", "UNKNOWN"),
+                    "model": jev_client.model,
+                    "status": veto_status,
+                    "last_updated": time.strftime("%H:%M:%S")
+                }
+                print(f"[Brain4 Jev] Decision: {action} (Conf: {conf*100:.1f}%, Move: {exp_move:+.1f} bps) -> Status: {veto_status}")
+        except Exception as e:
+            print(f"[Brain4 Jev] Evaluator error: {e}")
+            
+        await asyncio.sleep(30.0) # Evaluate every 30 seconds
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     t1 = asyncio.create_task(ingest_binance_stream("btcusdt"))
     t2 = asyncio.create_task(broadcast_live_state())
     t3 = asyncio.create_task(disk_writer_worker())
+    t4 = asyncio.create_task(jev_evaluator_worker())
     yield
     t1.cancel()
     t2.cancel()
     t3.cancel()
+    t4.cancel()
 
 app = FastAPI(lifespan=lifespan)
 quant_engine = LiveQuantEngine()
@@ -605,7 +686,8 @@ async def broadcast_live_state():
             "win_rate": win_rate,
             "cached_ticks": rdb.size,
             "chart": series_data,
-            "recent_trades": quant_engine.trades[:8]
+            "recent_trades": quant_engine.trades[:8],
+            "jev": latest_jev_decision
         }
         
         msg = json.dumps(payload)

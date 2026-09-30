@@ -303,6 +303,12 @@
             <div class="card-value" id="total-pnl">+$0.00</div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Target: <span id="target-pnl" style="color: var(--blue); font-weight: bold;">+$10.00</span></div>
         </div>
+        <!-- Brain 4 Jev Card -->
+        <div class="card" style="border: 1px solid rgba(56, 189, 248, 0.4); background: linear-gradient(145deg, #0F172A, #1E293B);">
+            <div class="card-label" style="color: var(--blue); font-weight: 700;">🧠 BRAIN 4: JEV AI</div>
+            <div class="card-value" id="jev-action" style="font-size: 1.25rem; color: #FFF;">FLAT</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;" id="jev-meta">Conf: 0% | Move: 0 bps</div>
+        </div>
     </div>
 
     <!-- Real-time Strategy Action Bar -->
@@ -484,6 +490,22 @@
                 if (data.regime.includes('BULL')) regimeEl.style.color = 'var(--green)';
                 else if (data.regime.includes('BEAR')) regimeEl.style.color = 'var(--red)';
                 else regimeEl.style.color = 'var(--blue)';
+
+                // Update Brain 4 Jev Card
+                if (data.jev) {
+                    const jevActEl = document.getElementById('jev-action');
+                    const jevMetaEl = document.getElementById('jev-meta');
+                    const action = data.jev.action || 'FLAT';
+                    const conf = Math.round((data.jev.confidence || 0) * 100);
+                    const move = (data.jev.expected_move_bps || 0).toFixed(0);
+                    
+                    jevActEl.innerText = action;
+                    if (action === 'LONG') jevActEl.style.color = 'var(--green)';
+                    else if (action === 'SHORT') jevActEl.style.color = 'var(--red)';
+                    else jevActEl.style.color = 'var(--text-muted)';
+
+                    jevMetaEl.innerText = `Conf: ${conf}% | Move: ${move} bps | ${data.jev.status || 'OK'}`;
+                }
 
                 // Update Action / Signal
                 document.getElementById('signal-text').innerText = data.signal;
