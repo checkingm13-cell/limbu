@@ -41,7 +41,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 import uvicorn
 
 # Disk Persistence Paths (kdb+ HDB equivalent)
-DATA_DIR = "D:/projects/QUANT/data"
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 TICKS_CSV = os.path.join(DATA_DIR, "live_ticks.csv")
 TRADES_CSV = os.path.join(DATA_DIR, "live_trades.csv")
@@ -529,7 +529,7 @@ active_clients: List[WebSocket] = []
 @app.get("/")
 def get_dashboard():
     # Read HTML dashboard file
-    html_path = "D:/projects/QUANT/live_dashboard.html"
+    html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "live_dashboard.html")
     if os.path.exists(html_path):
         with open(html_path, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
