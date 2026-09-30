@@ -20,6 +20,7 @@ import time
 import os
 import sys
 import math
+import numpy as np
 from typing import Dict, Any, List
 
 # Configure UTF-8 stdout
@@ -86,6 +87,35 @@ class ForwardPaperTrader:
         self.last_decision_ts = 0.0
         self.decision_interval_sec = 60.0 # Evaluate snapshot every 60s
         self.last_decision: Dict[str, Any] = {"action": "FLAT", "confidence": 0.0, "status": "WARMING_UP"}
+
+        # Pre-seed historical klines so Brain 4 Jev has instant market context
+        self.bootstrap_historical_klines()
+
+    def bootstrap_historical_klines(self, limit: int = 120):
+        """Pre-seeds rolling 1m buffers with historical klines from Binance REST API."""
+        try:
+            import urllib.request
+            url = f"https://api.binance.com/api/v3/klines?symbol={self.symbol}&interval=1m&limit={limit}"
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                klines = json.loads(resp.read().decode("utf-8"))
+            
+            for k in klines:
+                # Binance kline format: [0: open_time, 1: open, 2: high, 3: low, 4: close, 5: vol, ..., 9: taker_buy_base_vol, ...]
+                c = float(k[4])
+                vol = float(k[5])
+                tb_vol = float(k[9])
+                self.prices_1m.append(c)
+                self.volume_1m.append(vol)
+                self.taker_buy_vol_1m.append(tb_vol)
+
+            if self.prices_1m:
+                self.current_price = self.prices_1m[-1]
+            print(f"[Bootstrap] Successfully pre-seeded {len(self.prices_1m)} 1m bars from Binance REST API. Latest Close: ${self.current_price:,.2f}", flush=True)
+            # Evaluate initial decision immediately upon startup
+            self.evaluate_decision()
+        except Exception as e:
+            print(f"[Bootstrap] Note: Could not fetch initial klines ({e}). Will warm up via live stream.", flush=True)
 
     def update_tick(self, price: float, qty: float, is_buyer_maker: bool):
         """Processes an aggregated trade print."""
