@@ -72,6 +72,7 @@ class JevClient:
             "{\n"
             '  "action": "LONG" | "SHORT" | "FLAT",\n'
             '  "confidence": 0.0 to 1.0,\n'
+            '  "probs": {"LONG": 0.0 to 1.0, "SHORT": 0.0 to 1.0, "FLAT": 0.0 to 1.0},\n'
             '  "expected_move_bps": float,\n'
             '  "regime": "TRENDING_BULL" | "TRENDING_BEAR" | "CHOP" | "VOL_SPIKE"\n'
             "}"
@@ -99,6 +100,7 @@ class JevClient:
         try:
             with urllib.request.urlopen(req, timeout=12) as resp:
                 result = json.loads(resp.read().decode("utf-8"))
+                returned_model = result.get("model", self.model)
                 content = result["choices"][0]["message"]["content"]
                 
                 # Clean markdown backticks if returned
@@ -113,7 +115,18 @@ class JevClient:
 
                 parsed = json.loads(clean_content)
                 parsed["is_mock"] = False
-                parsed["model"] = self.model
+                parsed["model"] = returned_model
+                
+                # Ensure probability vector exists and normalizes properly
+                if "probs" not in parsed or not isinstance(parsed["probs"], dict):
+                    action = parsed.get("action", "FLAT")
+                    conf = float(parsed.get("confidence", 0.50))
+                    rem = max(1.0 - conf, 0.0) / 2.0
+                    parsed["probs"] = {
+                        "LONG": conf if action == "LONG" else rem,
+                        "SHORT": conf if action == "SHORT" else rem,
+                        "FLAT": conf if action == "FLAT" else rem
+                    }
                 return parsed
 
         except Exception as e:
@@ -121,9 +134,11 @@ class JevClient:
             return {
                 "action": "FLAT",
                 "confidence": 0.50,
+                "probs": {"LONG": 0.25, "SHORT": 0.25, "FLAT": 0.50},
                 "expected_move_bps": 0.0,
                 "regime": "API_TIMEOUT_OR_ERROR",
-                "is_mock": True
+                "is_mock": True,
+                "model": "fallback_flat"
             }
 
 

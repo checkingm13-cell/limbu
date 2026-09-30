@@ -24,6 +24,7 @@ import time
 import os
 import sys
 import csv
+import hashlib
 from contextlib import asynccontextmanager
 from typing import List, Dict, Any
 
@@ -59,6 +60,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 TICKS_CSV = os.path.join(DATA_DIR, "live_ticks.csv")
 TRADES_CSV = os.path.join(DATA_DIR, "live_trades.csv")
 TELEMETRY_CSV = os.path.join(DATA_DIR, "telemetry_stream.csv")
+SHADOW_JEV_LOG = os.path.join(DATA_DIR, "shadow_jev_log.jsonl")
 
 # Initialize CSV files with headers if they do not exist
 if not os.path.exists(TICKS_CSV):
@@ -580,11 +582,53 @@ async def jev_evaluator_worker():
                     "confidence": conf,
                     "expected_move_bps": exp_move,
                     "regime": jev_res.get("regime", "UNKNOWN"),
-                    "model": jev_client.model,
+                    "model": jev_res.get("model", jev_client.model),
                     "status": veto_status,
                     "last_updated": time.strftime("%H:%M:%S")
                 }
                 print(f"[Brain4 Jev] Decision: {action} (Conf: {conf*100:.1f}%, Move: {exp_move:+.1f} bps) -> Status: {veto_status}")
+
+                # === SHADOW MODE LOGGER ===
+                # Logs full state immutably for discrimination testing & threshold re-calibration
+                snap_str = json.dumps(snap, sort_keys=True)
+                snap_hash = hashlib.sha256(snap_str.encode("utf-8")).hexdigest()[:16]
+                
+                # Rule signal at this exact moment
+                rule_signal = "FLAT"
+                if vwap_z < -quant_engine.entry_z:
+                    rule_signal = "LONG"
+                elif vwap_z > quant_engine.entry_z:
+                    rule_signal = "SHORT"
+
+                shadow_record = {
+                    "timestamp": int(time.time()),
+                    "time_str": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "snapshot_hash": snap_hash,
+                    "snapshot_features": snap,
+                    "rule_signal": rule_signal,
+                    "rule_z": round(vwap_z, 2),
+                    "jev_returned_model": jev_res.get("model", jev_client.model),
+                    "jev_action": action,
+                    "jev_confidence": conf,
+                    "jev_probs": jev_res.get("probs", {action: conf}),
+                    "jev_expected_move_bps": exp_move,
+                    "jev_regime": jev_res.get("regime", "UNKNOWN"),
+                    "brain2_verdict": veto_status,
+                    "is_mock": bool(jev_res.get("is_mock", False)),
+                    "spot_price_at_eval": cur_p,
+                    "forward_outcomes": {
+                        "eval_price": cur_p,
+                        "p_15m": None, "p_1h": None, "p_4h": None,
+                        "ret_15m_net_bps": None, "ret_1h_net_bps": None, "ret_4h_net_bps": None
+                    }
+                }
+                
+                try:
+                    with open(SHADOW_JEV_LOG, "a", encoding="utf-8") as sf:
+                        sf.write(json.dumps(shadow_record) + "\n")
+                except Exception as log_err:
+                    print(f"[ShadowLogger] Error appending record: {log_err}")
+
         except Exception as e:
             print(f"[Brain4 Jev] Evaluator error: {e}")
             
@@ -630,6 +674,13 @@ def download_trades():
     if os.path.exists(TRADES_CSV):
         return FileResponse(TRADES_CSV, media_type="text/csv", filename="executed_trades.csv")
     return {"error": "No trades logged yet"}
+
+
+@app.get("/download/shadow_log")
+def download_shadow_log():
+    if os.path.exists(SHADOW_JEV_LOG):
+        return FileResponse(SHADOW_JEV_LOG, media_type="application/x-jsonlines", filename="shadow_jev_log.jsonl")
+    return {"error": "No shadow log recorded yet"}
 
 
 @app.websocket("/ws")
