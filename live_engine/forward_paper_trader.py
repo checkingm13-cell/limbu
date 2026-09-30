@@ -36,6 +36,7 @@ except ImportError:
     sys.exit(1)
 
 from laya_client import LayaClient
+from jev_client import JevClient
 from brain4_llm_advisor import Brain4Advisor
 
 LOG_DIR = "D:/projects/QUANT/production_system/data"
@@ -78,8 +79,10 @@ class ForwardPaperTrader:
         self.trade_history: List[Dict[str, Any]] = []
 
         # Decision & Governor Engines
+        self.jev = JevClient()
         self.laya = LayaClient(strict_no_mock=False)
         self.advisor = Brain4Advisor()
+        self.engine_mode = "JEV_OPENROUTER" if self.jev.is_live else "LAYA_LOCAL"
         self.last_decision_ts = 0.0
         self.decision_interval_sec = 60.0 # Evaluate snapshot every 60s
         self.last_decision: Dict[str, Any] = {"action": "FLAT", "confidence": 0.0, "status": "WARMING_UP"}
@@ -163,19 +166,26 @@ class ForwardPaperTrader:
             taker_buy_ratio=feats["taker_ratio"]
         )
 
-        # Predict with calibrated temperature T=5.000
-        laya_output = self.laya.predict_decision(sanitized_snap, temperature=CALIBRATED_TEMPERATURE)
-        proposed_action = laya_output["action"]
-        confidence = laya_output["confidence"]
-
-        # Expected move heuristic based on multi-hour impulse
-        expected_move_bps = abs(feats["ret_1h"] * 0.8 + feats["ret_4h"] * 0.4)
+        # Query Brain 4 engine (Jev OpenRouter if key exists, else Laya)
+        if self.jev.is_live:
+            model_output = self.jev.predict_decision(sanitized_snap)
+            proposed_action = model_output.get("action", "FLAT")
+            confidence = model_output.get("confidence", 0.50)
+            expected_move_bps = model_output.get("expected_move_bps", abs(feats["ret_1h"] * 0.8 + feats["ret_4h"] * 0.4))
+            probs = model_output.get("probs", {proposed_action: confidence})
+        else:
+            # Predict with calibrated temperature T=5.000
+            laya_output = self.laya.predict_decision(sanitized_snap, temperature=CALIBRATED_TEMPERATURE)
+            proposed_action = laya_output["action"]
+            confidence = laya_output["confidence"]
+            expected_move_bps = abs(feats["ret_1h"] * 0.8 + feats["ret_4h"] * 0.4)
+            probs = laya_output["probs"]
 
         proposal = {
             "action": proposed_action,
             "confidence": confidence,
             "expected_move_bps": expected_move_bps,
-            "probs": laya_output["probs"]
+            "probs": probs
         }
 
         # Brain 2 Safety Governor Veto Gate
@@ -194,7 +204,8 @@ class ForwardPaperTrader:
             "confidence": confidence,
             "expected_move_bps": round(expected_move_bps, 1),
             "governor_status": "APPROVED" if governor_veto["approved"] else governor_veto["reason"],
-            "probs": laya_output["probs"]
+            "probs": probs,
+            "engine": self.engine_mode
         }
 
         # Execute Paper Order if state transitions
@@ -262,7 +273,7 @@ class ForwardPaperTrader:
         sys.stdout.write("\033[H\033[J") # Clear screen
         print("=" * 82)
         print(f"  FOUR-BRAIN FORWARD PAPER TRADING CANARY  |  ASSET: {self.symbol} (Binance Live)")
-        print(f"  Engine: Laya-421M (MNN/Adapter)  |  Calibrated Temp: {CALIBRATED_TEMPERATURE}  |  Fee: 19.0 bps")
+        print(f"  Engine: {self.engine_mode} ({self.jev.model if self.jev.is_live else 'Laya-421M'})  |  Fee: 19.0 bps")
         print("=" * 82)
         print(f"  Live Spot Price:    ${self.current_price:,.2f}  |  1m Bars Buffered: {len(self.prices_1m)}/240")
         print(f"  Active Position:    {pos_str:<10}  |  Unrealized Net: {unrealized_bps:+.1f} bps")
