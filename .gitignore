@@ -4,8 +4,15 @@ rust_core/target/
 __pycache__/
 *.pyc
 
-# Local secrets or scratch files
+# Local secrets, models or scratch files
 .env
 scratch/
+models/
 check_stats.py
 verify_all_klines.py
+
+# Data files (parquet, csv, jsonl)
+data/
+*.parquet
+*.csv
+*.jsonl

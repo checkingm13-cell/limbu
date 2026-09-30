@@ -29,6 +29,8 @@
 | 14 | `14-microstructure-diagnostics-and-math.md` | Timescale mismatch, ADF unit root, Hurst exponent, OU half-life math |
 | 15 | `15-live-operations-and-self-healing-runbook.md` | Live server, Web terminal, hot reloading, circuit breakers & runbook |
 | 16 | `16-self-healing-vs-self-modifying.md` | Self-Healing vs Self-Modifying: Safe mode vs live mutation, Risk Veto boundary |
+| 17 | `17-macro-equity-historical-task.md` | Multi-decade macro, global equities & commodity ingestion task |
+| 18 | `18-limbu-vs-bees-comparative-analysis-and-hybrid-roadmap.md` | limbu vs Bees architecture comparison, balanced critique & hybrid roadmap |
 
 ---
 
