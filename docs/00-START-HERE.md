@@ -31,6 +31,11 @@
 | 16 | `16-self-healing-vs-self-modifying.md` | Self-Healing vs Self-Modifying: Safe mode vs live mutation, Risk Veto boundary |
 | 17 | `17-macro-equity-historical-task.md` | Multi-decade macro, global equities & commodity ingestion task |
 | 18 | `18-limbu-vs-bees-comparative-analysis-and-hybrid-roadmap.md` | limbu vs Bees architecture comparison, balanced critique & hybrid roadmap |
+| 19 | `19-network-hardware-and-infrastructure-setup.md` | Network NIC diagnostic (FE 100M bottleneck), PCIe/USB Gigabit & Wi-Fi 6E/7 upgrade |
+| 20 | `20-production-infrastructure-costs-and-roi-reality.md` | VPS cost engineering ($20-$180/mo), kdb+ open-source stack, and ROI truth |
+| 21 | `21-cheap-engineering-and-high-roi-quant-playbook.md` | Dev forum consensus: Asymmetric edges, delta-neutral funding arb, $10/mo stack |
+| 22 | `22-high-performance-networking-and-native-dns-latency.md` | CLI vs native speed, aria2c RPC, and sub-millisecond UDP DNS resolution |
+| 23 | `23-outbound-intelligence-and-decision-maker-pipeline.md` | Outbound spectrum: 99% Apollo spam vs 0.1% waterfall vs 0.00001% sovereign graph infiltration |
 
 ---
 
